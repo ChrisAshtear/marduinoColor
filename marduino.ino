@@ -44,7 +44,7 @@
 #include "tilemap.h"
 #include "mariobitmap.h"
 #include "levels.h"
-
+#include "tilesetbitmap.h"
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 TileMap gameTilemap;
@@ -428,6 +428,7 @@ void playerDraw() {
   //BMP * frameAtual;
   const unsigned char * frameAtual;
   const unsigned char * idxActual;
+  bool flipH = false;
   //animation setup
   if (animInit) {
   
@@ -462,29 +463,33 @@ void playerDraw() {
   idxActual = mario0col;
   if (player_state == P_STILL) {
    if (player_direction == 1) 
-    frameAtual = frameMario0;
+    flipH = false;
    else
-    frameAtual = frameMario4;
+   flipH = true;
   } else if (player_state == P_JUMP) {
-    if (player_direction == 1) 
-      frameAtual = frameMario3;
-    else
-      frameAtual = frameMario7;
+    if (player_direction == 1) {
+      idxActual = marioJcol;
+    }
+    else{
+      idxActual = marioJcol;
+      flipH = true;
+    }
   } else if (player_state == P_MOVE) {
     
     if (player_direction == 1) {
       switch (frame) {
-        case 0: frameAtual = frameMario1; idxActual = mario1col; break;
-        case 1: frameAtual = frameMario0; idxActual = mario0col;break;
-        case 2: frameAtual = frameMario2; idxActual = mario2col;break;
-        case 3: frameAtual = frameMario0; idxActual = mario0col;break;
+        case 0: idxActual = mario1col; break;
+        case 1: idxActual = mario0col;break;
+        case 2: idxActual = mario2col;break;
+        case 3: idxActual = mario0col;break;
       }
     } else {
+      flipH = true;
       switch (frame) {
-        case 0: frameAtual = frameMario5; break;
-        case 1: frameAtual = frameMario4; break;
-        case 2: frameAtual = frameMario6; break;
-        case 3: frameAtual = frameMario4; break;
+        case 0: idxActual = mario1col; break;
+        case 1: idxActual = mario0col; break;
+        case 2: idxActual = mario2col; break;
+        case 3: idxActual = mario0col; break;
       }
     }
   
@@ -520,7 +525,7 @@ void playerDraw() {
   
   
   //tft.drawFastBitmap(player_position.x, player_position.y, frameAtual, pimagew,pimageh,1, ST7735_WHITE);
-  tft.drawFastColorBitmap(player_position.x, player_position.y, frameAtual, pimagew,pimageh,idxActual,marioPal,ST7735_WHITE);
+  tft.drawFastColorBitmap(player_position.x, player_position.y, pimagew,pimageh,idxActual,marioPal,flipH,false);
   // debug collision box
   //tft.fillRect(player_position.x+pboxoffsetx, player_position.y, 10, 16, ST7735_BLACK);
 
@@ -627,21 +632,20 @@ void sceneTitle() {
         //marioLogo - Monochrome: 88%(25300) | 408 bytes
         //no logo - 24892(86%) 
         
-       //tft.drawBitmap((tft.width()-gameLogoSizeX)/2, 0, gameLogo, gameLogoSizeX, gameLogoSizeY,ST7735_BLUE,ST7735_WHITE);
        tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, 0, toplogo, toplogo_width, toplogo_height,ST7735_BLUE);
        tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, botlogo, botlogo_width, botlogo_height,ST7735_RED);
        tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, shadow, shadow_width, shadow_height,ST7735_BLACK);
-       //tft.drawFastColorBitmap((tft.width()-gameLogoSizeX)/2, 0, gameLogo, gameLogoSizeX, gameLogoSizeY,logo_color_data,logoPal,ST7735_WHITE);
-       //tft.drawFastColorBitmap((tft.width()-gameLogoSizeX)/2, 0, plus, 16, 16,plusColor,plusPal,ST7735_WHITE);
-       //tft.drawFastColorBitmap((tft.width()-gameLogoSizeX)/2, 0, chrome, 32, 32,chromeColor,chromePal,ST7735_WHITE);
-       //tft.drawFastColorBitmap((tft.width()-gameLogoSizeX)/2, 96, frameMario2, 16, 16,mario2col,marioPal,ST7735_WHITE);
+       //
+      //_tft->drawFastColorBitmap(x, y,_tileWidth,_tileHeight,*tilePtr,tilePal);
+      //tft.drawCBMPsection(16,64,16,16,mario0col,marioPal,16,16,0,false,true);
+       //tft.drawFastColorBitmap(16,16,8,8,tilePtr,tilePal);
        String output;
-       uint8_t color;
-        for(uint16_t i = 250; i< 266; i++)
+       uint8_t test;
+       /* for(uint16_t i = 0; i< 8; i++)
         {
-          //color = pgm_read_byte(&chromeColor[i]);
-          //output += color;
-        }
+          test = pgm_read_byte(&tilePtr[i]);
+          output += test;
+        }*/
          tft.setCursor((tft.width()-getTextSize(output))/2,tft.height()/2-12);
         tft.println(output);
         tft.setTextSize(1);
@@ -653,7 +657,7 @@ void sceneTitle() {
         
         tft.setCursor((tft.width()-getTextSize(str))/2,24+8);
         tft.print(str);
-        playerDraw();
+        //playerDraw();
         //tft.tft(); display.display()?
        
       

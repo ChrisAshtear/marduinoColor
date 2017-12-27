@@ -11,6 +11,7 @@ typedef const unsigned char PROGMEM BMP;
 typedef const unsigned int PROGMEM TILEMAPSET;
 typedef const unsigned char PROGMEM COLORIDX;
 typedef const uint16_t PROGMEM PAL;
+typedef const uint16_t PROGMEM ENEMY;
 
 struct Vector2f {
 float x;

@@ -4,8 +4,9 @@
 #include "tilesetbitmap.h"
 #include "levels.h"
 
-#define MAP_HEIGHT 48
+#define MAP_HEIGHT 40
 //96 is in pixels, 12 in tiles
+//MONOCHROME BG layer?
 
   TileMap::TileMap() {
         _tileMapWidth = 1;
@@ -60,43 +61,20 @@
 	}
 
 	void TileMap::drawTile(const unsigned int id, int x, int y) {
-
-		BMP * tileToDraw = NULL;
-
-		switch(id) {
-
-			case 2: {tileToDraw = tileset002; break;}
-			case 3: {tileToDraw = tileset003; break;}
-			case 4: {tileToDraw = tileset004; break;}
-      case 11: {tileToDraw = tileset011; break;}
-      case 14: {tileToDraw = tileset014; break;}
-      case 55: {tileToDraw = tileset055; break;}
-      case 56: {tileToDraw = tileset056; break;}
-      case 71: {tileToDraw = tileset071; break;}
-      case 72: {tileToDraw = tileset072; break;}
-			case 76: {tileToDraw = tileset076; break;}
-			case 77: {tileToDraw = tileset077; break;}
-			case 78: {tileToDraw = tileset078; break;}
-			case 79: {tileToDraw = tileset079; break;}
-			case 80: {tileToDraw = tileset080; break;}
-      case 102: {tileToDraw = tileset102; break;}
-      case 103: {tileToDraw = tileset103; break;}
-      case 118: {tileToDraw = tileset118; break;}
-      case 119: {tileToDraw = tileset119; break;}
-      case 145: {tileToDraw = tileset145; break;}
-      case 146: {tileToDraw = tileset146; break;}
-      case 162: {tileToDraw = tileset162; break;}
-      case 161: {tileToDraw = tileset080; break;}
-      case 163: {tileToDraw = tileset163; break;}
-		}
-
-		if (tileToDraw != NULL) 
-			_tft->drawFastBitmap(x, y, tileToDraw, _tileWidth,_tileHeight,1,ST7735_WHITE);
+    int16_t setWidth = TILESETW;
+    int16_t setHeight = TILESETH;
+		if (true) 
+    {
+      _tft->drawCBMPsection(x,y,_tileWidth,_tileHeight,tileSet,tilePal,setWidth,setHeight,id,false,false);
+      //const unsigned char *tilePtr[_tileHeight * _tileHeight]= {tileSet+((_tileHeight * _tileHeight)*id)};
+      //_tft->drawFastColorBitmap(x, y,_tileWidth,_tileHeight,*tilePtr,tilePal);
+			//_tft->drawFastBitmap(x, y, tileToDraw, _tileWidth,_tileHeight,1,ST7735_WHITE);
       //_tft->drawSurface(x, y, tileToDraw, _tileWidth,_tileHeight,1,ST7735_WHITE);
       //_tft->drawBitmap(x, y, tileToDraw, _tileWidth,_tileHeight,1);
+    }
     else
     {
-      //_tft->fillRect(x, y, _tileWidth,_tileHeight,ST7735_WHITE);
+      _tft->fillRect(x, y, _tileWidth,_tileHeight,ST7735_WHITE);
     }
 	}
 	
@@ -123,8 +101,8 @@
 			unsigned int tileIndex = xx + (yy*_tileMapWidth);
       tileIndex = pgm_read_word_near(&_tileMapID[tileIndex]);
       
-      if (tileIndex > 0)  
-		    drawTile(tileIndex,xcamera+(xx*_tileWidth),ycamera+(yy*_tileHeight));
+      if (tileIndex != -1)  
+		    drawTile(tileIndex,xcamera+(xx*_tileWidth),8+ycamera+(yy*_tileHeight));
                         //Serial.print(test);
                         //Serial.print("\n");    // prints a tab
 
