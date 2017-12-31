@@ -32,12 +32,6 @@
 
 // Color definitions
 #define  ST7735_BLACK           0x0000
-#define BLUE            0x001F
-#define RED             0xF800
-#define GREEN           0x07E0
-#define CYAN            0x07FF
-#define MAGENTA         0xF81F
-#define YELLOW          0xFFE0  
 #define ST7735_WHITE           0xFFFF
 
 #include "marduinotypes.h"
@@ -610,7 +604,7 @@ void sceneTitle() {
            
            if (buttonPressed[1]) {
             triggerSelect = 1;
-            counterMax = 3;
+            counterMax = 1;
           }
          } 
         
@@ -619,8 +613,8 @@ void sceneTitle() {
       
         switch (select) {
           case 0: {str = "< START GAME >"; break;};
-          case 1: {str = "< CREDITS >"; break;};
-          case 2: {str = "< EXIT GAME >"; break;};  
+          //case 1: {str = "< CREDITS >"; break;};
+          //case 2: {str = "< EXIT GAME >"; break;};  
         }
         
         //clearScreen();
@@ -634,11 +628,19 @@ void sceneTitle() {
         
        tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, 0, toplogo, toplogo_width, toplogo_height,ST7735_BLUE);
        tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, botlogo, botlogo_width, botlogo_height,ST7735_RED);
-       tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, shadow, shadow_width, shadow_height,ST7735_BLACK);
+      // tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, shadow, shadow_width, shadow_height,ST7735_BLACK);
        //
       //_tft->drawFastColorBitmap(x, y,_tileWidth,_tileHeight,*tilePtr,tilePal);
       //tft.drawCBMPsection(16,64,16,16,mario0col,marioPal,16,16,0,false,true);
        //tft.drawFastColorBitmap(16,16,8,8,tilePtr,tilePal);
+     //long time = millis();
+      tft.drawCBMPsection(16,64,16,16,mario0col,marioPal,16,16,0,false,true);
+      //time = millis() - time;
+      //tft.setCursor(64,64);
+      //tft.fillRect(64,64,8,8,ST7735_WHITE);
+      //tft.println(time,DEC);
+      
+       
        String output;
        uint8_t test;
        /* for(uint16_t i = 0; i< 8; i++)
@@ -676,8 +678,6 @@ void sceneTitle() {
           
           if (select == 0) {
             gamestate = GAME_LEVEL;
-          } else if (select == 1) {
-            gamestate = GAME_CREDITS;
           } else {
             triggerSelect = 0;
           }   
@@ -688,87 +688,10 @@ void sceneTitle() {
    
   }
 
-void sceneCredit() {
 
-  float sizex = 8*6;
-  int page = 0;
-  
-  while (gamestate == GAME_CREDITS) {
-  
-    TIMER_CURRENT = millis();
-    
-      if (TIMER_CURRENT - TIMER_PREV > DELAY) { 
-      
-        TIMER_PREV = TIMER_CURRENT;
-     
-          inputManager();
-        
-        if (buttonPressed[2] || buttonPressed[1] || buttonPressed[0]) {
-          page++;
-        }
-         sizex = 8*6;
-      
-    
-          tft.setTextSize(1);
-          tft.setTextColor(ST7735_BLACK);
-          tft.setCursor((tft.width()-sizex)/2,0);
-          if (page < 2) 
-            tft.print("CREDITS:");
-          tft.setCursor(0,8);
-          if (page == 0) {
-            tft.println("Created by:");
-            tft.println("Tobias Ulrich and Reginaldo da Silva.");
-          } else if (page == 1) {
-            clearScreen();
-             tft.println("Written in C  with Arduino  Uno.");
-           sizex = 10*6;
-           tft.setCursor((tft.width()-sizex)/2,32);
-           clearScreen();
-            tft.print("Dec, 2014.");
-          } else {
-            gamestate = GAME_TITLE;
-          } 
-          
-    
-         //tft.tft();display.display?
-      }
-        
-  }
-}
-
-void sceneLevel() {
-
-  float sizex = 7*6;
-  
-  while (gamestate == GAME_LEVEL) {
-    
-         clearScreen();
-   
-          tft.fillRect(0, 0, tft.width(), tft.height(), ST7735_BLACK);
-          tft.setTextSize(1);
-          tft.setTextColor(ST7735_WHITE,ST7735_BLACK);
-          tft.setCursor((tft.width()-sizex)/2,(tft.height()/2)-3);
-          tft.print("LEVEL 1");
-                     
-          
-    
-         //tft.tft();display.display()?
-         
-    TIMER_CURRENT = millis();
-    
-      if (TIMER_CURRENT - TIMER_PREV > 2250) { 
-      
-        TIMER_PREV = TIMER_CURRENT;
-        gamestate = GAME_PLAY;
-        clearScreen();
-      }
-        
-  }
-}
-
-void sceneGameOver() {
-
-  float sizex = 9*6;
+void sceneChange(String text, unsigned int nextState)
+{
+  int sizex = getTextSize(text);
   
   while (gamestate == GAME_GAMEOVER) {
     
@@ -842,7 +765,17 @@ void sceneGame() {
         //{
         //clearTileMap();
         //}
+
+        //long time = millis();
         gameTilemap.drawMap(camera.x,camera.y);
+        //time = millis() - time;
+       //// tft.setCursor(64,64);
+        //tft.fillRect(64,64,8,8,ST7735_WHITE);
+        //tft.println(time,DEC);
+        //tft.setCursor(64,72);
+        //tft.fillRect(64,72,8,8,ST7735_WHITE);
+       // tft.println(freeRam(),DEC);
+        
         playerDraw();
         drawGui();
         
@@ -864,18 +797,17 @@ void setup()   {
 
   tft.fillScreen(ST7735_BLACK);
   
-  printText("AHOY MATEY");
   //song - DOSENT WORK - DO NOT USE
   pinMode(PIN_SPEAKER, OUTPUT);//buzzer
   tone(PIN_SPEAKER,400,100);
   //pinMode(13, OUTPUT);//led indicator when singing a note
   
   // inputs
-  pinMode(PIN_BUTTON_LEFT, INPUT);//Define o pino 7 como entrada
-  digitalWrite(PIN_BUTTON_LEFT, HIGH);//Ativa o resistor de pull-up da porta 7
-  pinMode(PIN_BUTTON_SELECT, INPUT);//Define o pino 7 como entrada
-  digitalWrite(PIN_BUTTON_SELECT, HIGH);//Ativa o resistor de pull-up da porta 7
-  pinMode(PIN_BUTTON_RIGHT, INPUT);//Define o pino 7 como entrada
+  //pinMode(PIN_BUTTON_LEFT, INPUT);//Define o pino 7 como entrada
+  //digitalWrite(PIN_BUTTON_LEFT, HIGH);//Ativa o resistor de pull-up da porta 7
+  //pinMode(PIN_BUTTON_SELECT, INPUT);//Define o pino 7 como entrada
+  //digitalWrite(PIN_BUTTON_SELECT, HIGH);//Ativa o resistor de pull-up da porta 7
+  //pinMode(PIN_BUTTON_RIGHT, INPUT);//Define o pino 7 como entrada
   digitalWrite(PIN_BUTTON_RIGHT, HIGH);//Ativa o resistor de pull-up da porta 7
 
   gameTilemap.setMapSize(100,6);
@@ -925,14 +857,12 @@ void loop() {
   
     case GAME_INTRO: {sceneIntro(); break;}
     case GAME_TITLE: {sceneTitle(); break;}
-    case GAME_CREDITS: {sceneCredit(); break;}
-    case GAME_LEVEL: {sceneLevel(); break;}
+    case GAME_LEVEL: {sceneChange("Level 1",GAME_PLAY); break;}
     case GAME_PLAY: {sceneGame(); break;}
-    case GAME_GAMEOVER: {sceneGameOver(); break;}
+    case GAME_GAMEOVER: {sceneChange("Game Over", GAME_TITLE); break;}
   } 
 
   
   
 }
-
 

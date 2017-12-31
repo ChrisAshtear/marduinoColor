@@ -4,7 +4,7 @@
 #include "tilesetbitmap.h"
 #include "levels.h"
 
-#define MAP_HEIGHT 40
+#define MAP_HEIGHT 64
 //96 is in pixels, 12 in tiles
 //MONOCHROME BG layer?
 
@@ -63,19 +63,12 @@
 	void TileMap::drawTile(const unsigned int id, int x, int y) {
     int16_t setWidth = TILESETW;
     int16_t setHeight = TILESETH;
-		if (true) 
-    {
       _tft->drawCBMPsection(x,y,_tileWidth,_tileHeight,tileSet,tilePal,setWidth,setHeight,id,false,false);
       //const unsigned char *tilePtr[_tileHeight * _tileHeight]= {tileSet+((_tileHeight * _tileHeight)*id)};
       //_tft->drawFastColorBitmap(x, y,_tileWidth,_tileHeight,*tilePtr,tilePal);
 			//_tft->drawFastBitmap(x, y, tileToDraw, _tileWidth,_tileHeight,1,ST7735_WHITE);
       //_tft->drawSurface(x, y, tileToDraw, _tileWidth,_tileHeight,1,ST7735_WHITE);
       //_tft->drawBitmap(x, y, tileToDraw, _tileWidth,_tileHeight,1);
-    }
-    else
-    {
-      _tft->fillRect(x, y, _tileWidth,_tileHeight,ST7735_WHITE);
-    }
 	}
 	
 	void TileMap::drawMap(int xcamera, int ycamera) {
