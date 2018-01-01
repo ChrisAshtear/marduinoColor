@@ -102,8 +102,9 @@ Vector2f camera = {0,0};
 Vector2f last_camera = {0,0};
 int camera_player_side = 0;
 
-ObjectData playerObj(0,tft.height()-16-8,16,mario0col,mario1col,mario2col,marioJcol,mario0col);
+ObjectData playerObj(0,tft.height()-16-8,16,marioPal,mario0col,mario1col,mario2col,marioJcol,mario0col);
 
+    
 
 float sign(float x) {
 
@@ -418,6 +419,7 @@ void objDraw(ObjectData obj) {
   //BMP * frameAtual;
   const unsigned char * frameAtual;
   const unsigned char * idxActual;
+  idxActual = playerObj.frames[0];
   bool flipH = false;
   //animation setup
   if (animInit) {
@@ -484,8 +486,8 @@ void objDraw(ObjectData obj) {
   {
     yStart = obj.y;
   }
-  
-  tft.drawFastColorBitmap(64, 64, obj.imgSz,obj.imgSz,playerObj.frames[0],marioPal,flipH,false);
+
+  tft.drawFastColorBitmap(playerObj.x, playerObj.y, obj.imgSz,obj.imgSz,idxActual,playerObj.pal,flipH,false);
   //tft.drawFastColorBitmap(64, 64, 16,16,mario0col,marioPal,flipH,false);
   // debug collision box
   //tft.fillRect(player_position.x+pboxoffsetx, player_position.y, 10, 16, ST7735_BLACK);
@@ -717,6 +719,7 @@ void sceneTitle() {
         tft.setCursor((tft.width()-getTextSize(str))/2,24+8);
         tft.print(str);
         objDraw(playerObj);
+        
         //tft.tft(); display.display()?
        
       
@@ -868,6 +871,12 @@ void setup()   {
   gameTilemap.settftPointer(&tft);
   gameTilemap.setTileMap(TileMap0);
 
+  //atm necessary because assignment in constructor does not work.
+  playerObj.frames[0] = mario0col;
+  playerObj.frames[1] = mario1col;
+  playerObj.frames[2] = mario2col;
+  playerObj.frames[3] = marioJcol;
+  playerObj.frames[4] = mario0col;
   //ObjectData test(0,0,goomba0,goomba0,goomba0,goomba0,goomba0);
 };
 
