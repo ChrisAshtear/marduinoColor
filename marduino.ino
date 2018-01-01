@@ -67,19 +67,13 @@ unsigned int gamestate = GAME_INTRO; // game state
 long TIMER_PREV = 0; // timer 
 unsigned long TIMER_CURRENT = 0;
 //mario img
-int const pimagew = 16;
-int const pimageh = 16;
 //marduino settings
-int player_state = P_STILL; //player state 
-int player_direction = 1;
-int last_direction = 1;
 int life = 3;
 long playertimer = 0;
 long playertimer_prev = 0;
 //posicao do mario
-Vector2f player_position(0,tft.height()-pimageh-8);
-Vector2f player_position2(0,tft.height()-pimageh-8);
-Vector2f last_safe_position(0,tft.height()-pimageh-8);
+Vector2f player_position2(0,tft.height()-16-8);
+Vector2f last_safe_position(0,tft.height()-16-8);
 
 int lastPosY = 0;
 
@@ -107,6 +101,8 @@ float pboxoffsetx = 3;
 Vector2f camera = {0,0};
 Vector2f last_camera = {0,0};
 int camera_player_side = 0;
+
+ObjectData playerObj(0,tft.height()-16-8,16,mario0col,mario1col,mario2col,marioJcol,mario0col);
 
 
 float sign(float x) {
@@ -187,7 +183,7 @@ boolean intersectionRect(float * rect1, float * rect2) {
 
 void playerCollisionChecker(float hs, float vs) {
 
-  float playerRect[4] = {player_position.x+pboxoffsetx+hs+camera.x, player_position.y+vs,10,16};
+  float playerRect[4] = {playerObj.x+pboxoffsetx+hs+camera.x, playerObj.y+vs,10,16};
   
   for (int i = 0; i < CollisionMap0Size*4; i += 4) {
   
@@ -197,15 +193,15 @@ void playerCollisionChecker(float hs, float vs) {
           if (hs != 0) {
           
               hspd = (int)hspd;
-              player_position.x = (int)player_position.x;
+              //player_position.x = (int)player_position.x;
               boolean corrector = false;
     
               while (!corrector) {      
                    
-                  playerRect[0] = player_position.x+pboxoffsetx+camera.x+sign(hspd);
+                  playerRect[0] = playerObj.x+pboxoffsetx+camera.x+sign(hspd);
                   
                   if (!intersectionRect(playerRect,rectTest))  
-                    player_position.x += sign(hspd);
+                    playerObj.x += sign(hspd);
                   else 
                     corrector = true;
               }
@@ -218,15 +214,15 @@ void playerCollisionChecker(float hs, float vs) {
           if (vs != 0) {
              
               vspd = (int)vspd;
-              player_position.y = (int)player_position.y;
+              //player_position.y = (int)player_position.y;
               boolean correctorY = false;
     
               while (!correctorY) {      
                    
-                  playerRect[1] = player_position.y+camera.y+sign(vspd);
+                  playerRect[1] = playerObj.y+camera.y+sign(vspd);
                   
                   if (!intersectionRect(playerRect,rectTest))  
-                    player_position.y += sign(vspd);
+                    playerObj.y += sign(vspd);
                   else 
                     correctorY = true;
               }
@@ -257,52 +253,52 @@ boolean verifyCollision(float * rect) {
     return false;
 }
 
-void playerLogic(boolean move_esq, boolean move_dir, boolean jump) {
+void objLogic(ObjectData obj, boolean move_esq, boolean move_dir, boolean jump) {
 
-  lastFrameX = player_position.x;
-  lastFrameY = player_position.y;
+  lastFrameX = obj.x;
+  lastFrameY = obj.y;
   //HORIZONTAL MOVEMENT
 //clearSection(player_position.x, player_position.y,pimagew,pimageh);
-  if (player_state != P_DEAD) {
+  if (obj.state != P_DEAD) {
   
       hspd = 0;
       boolean moving = false;
      
       if (move_esq == true && move_dir == false) {
-          player_direction = 1;
+          obj.curDirection = 1;
           moving = true;
       } else if (move_dir == true && move_esq == false) {
-          player_direction = -1;
+          obj.curDirection = -1;
           moving = true;
       }
       
       if (moving)
-          hspd = hspd_speed * (float)player_direction;
+          hspd = hspd_speed * (float)obj.curDirection;
     
       playerCollisionChecker(hspd,0);
       
       player_position2.x += hspd;
       
        if (camera_player_side == -1) {
-          if (player_position.x > (tft.width()/2)-10)
+          if (obj.x > (tft.width()/2)-10)
             camera_player_side = 0;
           else
-            player_position.x += hspd;
+            obj.x += hspd;
     
           // screen limit <
-          if (player_position.x < 0) {
-            player_position.x = 0;
+          if (obj.x < 0) {
+            obj.x = 0;
             hspd = 0;
           }  
     
        } else if (camera_player_side == 1) {
-          if (player_position.x < (tft.width()/2)-10)
+          if (obj.x < (tft.width()/2)-10)
             camera_player_side = 0;
           else
-            player_position.x += hspd;
+            obj.x += hspd;
             
           // screen limit >
-          if (player_position.x > tft.width()) {
+          if (obj.x > tft.width()) {
             gamestate = GAME_TITLE;
             /*player_position.x = tft.width()-pimagew;
             hspd = 0;*/
@@ -317,10 +313,10 @@ void playerLogic(boolean move_esq, boolean move_dir, boolean jump) {
           } if (camera.x > gameTilemap.getMapWidth()*8-tft.width()) {
             camera_player_side = 1;
             camera.x = gameTilemap.getMapWidth()*8-tft.width();
-            player_position.x += hspd;
+            obj.x += hspd;
           } if (camera.x < 0) {
             camera_player_side = -1;
-            player_position.x += hspd; 
+            obj.x += hspd; 
             camera.x = 0;  
           }
         } 
@@ -328,7 +324,7 @@ void playerLogic(boolean move_esq, boolean move_dir, boolean jump) {
       //VERTICAL MOVEMENT
     
       //gravidade (esta no ar)
-     float playerRect[4] = { camera.x+player_position.x+pboxoffsetx,camera.y+player_position.y+1, 10, 16 };
+     float playerRect[4] = { camera.x+obj.x+pboxoffsetx,camera.y+obj.y+1, 10, 16 };
       
       if (!verifyCollision(playerRect)) {
         vspd += grav;
@@ -348,41 +344,41 @@ void playerLogic(boolean move_esq, boolean move_dir, boolean jump) {
         check_pulo = true;  
         tone(PIN_SPEAKER,400,100);
       }
-      lastPosY = player_position.y;
-      player_position.y += vspd;
+      lastPosY = obj.y;
+      obj.y += vspd;
       player_position2.y += vspd;
       
       if (vspd == 0 && !onAir) {
-          last_direction = player_direction;
+          obj.lastDirection = obj.curDirection;
           last_camera.x = camera.x;
           last_camera.y = player_position2.y;
-          last_safe_position.x = player_position.x;
-          last_safe_position.y = player_position.y;
+          last_safe_position.x = obj.x;
+          last_safe_position.y = obj.y;
       }
       
       //fall
 
-      if (player_position.y+camera.y > gameTilemap.getMapHeight()*gameTilemap.getTileHeight()) {
-          if (player_state != P_DEAD)
-              player_state = P_DEAD;
+      if (obj.y+camera.y > gameTilemap.getMapHeight()*gameTilemap.getTileHeight()) {
+          if (obj.state != P_DEAD)
+              obj.state = P_DEAD;
       }
     
-    if (player_state != P_DEAD) {
+    if (obj.state != P_DEAD) {
        if (hspd == 0 && vspd == 0) {
-        if (player_state != P_STILL) {
-          player_state = P_STILL;
+        if (obj.state != P_STILL) {
+          obj.state = P_STILL;
           animInit = true;
         }
       } else  if (hspd != 0 && vspd == 0) {
-         if (player_state != P_MOVE) {
-          player_state = P_MOVE;
+         if (obj.state != P_MOVE) {
+          obj.state = P_MOVE;
           animInit = true;
         }
       } 
       
       if (vspd != 0) {
-        if (player_state != P_JUMP) {
-          player_state = P_JUMP;
+        if (obj.state != P_JUMP) {
+          obj.state = P_JUMP;
           animInit = true;
          }   
       }
@@ -399,12 +395,12 @@ void playerLogic(boolean move_esq, boolean move_dir, boolean jump) {
           life--;
           
           if (life > 0) {  
-            player_position.x = (int)((last_safe_position.x/8)*8);/*+(8*-last_direction);*/
-            player_position.y = (int)((last_safe_position.y/8)*8);
-            player_position2.x = player_position.x;
+            obj.x = (int)((last_safe_position.x/8)*8);/*+(8*-last_direction);*/
+            obj.y = (int)((last_safe_position.y/8)*8);
+            player_position2.x = obj.x;
             camera.x = (int)((last_camera.x/8)*8);/*+(8*last_direction);*//*-(tft.width()/2)-8;*/
             camera.y = 0;
-            player_state = P_STILL;
+            obj.state = P_STILL;
             vspd = 0;
             hspd = 0;
             check_pulo = false;
@@ -416,7 +412,88 @@ void playerLogic(boolean move_esq, boolean move_dir, boolean jump) {
   
 }
 
-void playerDraw() {
+void objDraw(ObjectData obj) {
+  
+  //get size of playerbox & player position, then fill that box with bg color.
+  //BMP * frameAtual;
+  const unsigned char * frameAtual;
+  const unsigned char * idxActual;
+  bool flipH = false;
+  //animation setup
+  if (animInit) {
+  
+    frame = 0;
+    frameCounter = 0;   
+    
+    if (obj.state == P_STILL || obj.state == P_JUMP) {
+      frameSpd = 0.;
+      frameMax = 1; 
+    } else if (obj.state == P_MOVE) {
+      frameSpd = 0.8;
+      frameMax = 4;
+    }
+  
+     animInit = false;
+  }
+  
+  //controlador de tempo de frames
+  if (frameMax > 1) {
+    frameCounter += frameSpd*DELAY;
+    
+    if (frameCounter > DELAY) {
+      frame++;
+      frameCounter = 0;
+      if (frame > frameMax-1) {
+        frame = 0;
+      }
+    }
+  }
+  
+  if (obj.curDirection != 1) 
+    flipH = true;
+  //frames manager 
+  idxActual = obj.frames[0]; //idle
+
+  if (obj.state == P_JUMP) {
+    idxActual = obj.frames[2];
+  }
+  else if (obj.state == P_MOVE) {
+      switch (frame) {
+        case 0: idxActual = obj.frames[1]; break;
+        case 1: idxActual = obj.frames[0];break;
+        case 2: idxActual = obj.frames[2];break;
+        case 3: idxActual = obj.frames[0];break;
+      }
+  }
+
+  int xStart = 0;
+  int yStart = 0;
+  if(lastFrameX < obj.x)
+  {
+    xStart = lastFrameX;
+  }
+  else
+  {
+    xStart = obj.x;
+  }
+  if(lastFrameY < obj.y)
+  {
+    yStart = lastFrameY;
+  }
+  else
+  {
+    yStart = obj.y;
+  }
+  
+  tft.drawFastColorBitmap(64, 64, obj.imgSz,obj.imgSz,playerObj.frames[0],marioPal,flipH,false);
+  //tft.drawFastColorBitmap(64, 64, 16,16,mario0col,marioPal,flipH,false);
+  // debug collision box
+  //tft.fillRect(player_position.x+pboxoffsetx, player_position.y, 10, 16, ST7735_BLACK);
+
+}
+
+
+/*void playerDraw() {
   
   //get size of playerbox & player position, then fill that box with bg color.
   //BMP * frameAtual;
@@ -504,7 +581,7 @@ void playerDraw() {
   //tft.fillRect(player_position.x+pboxoffsetx, player_position.y, 10, 16, ST7735_BLACK);
 
 }
-
+*/
 int counterGUI = 0;
 
 void drawGui() {
@@ -614,7 +691,7 @@ void sceneTitle() {
       //tft.drawCBMPsection(16,64,16,16,mario0col,marioPal,16,16,0,false,true);
        //tft.drawFastColorBitmap(16,16,8,8,tilePtr,tilePal);
      //long time = millis();
-      tft.drawCBMPsection(16,64,16,16,mario0col,marioPal,16,16,0,false,true);
+      //tft.drawCBMPsection(16,64,16,16,mario0col,marioPal,16,16,0,false,true);
       //time = millis() - time;
       //tft.setCursor(64,64);
       //tft.fillRect(64,64,8,8,ST7735_WHITE);
@@ -639,7 +716,7 @@ void sceneTitle() {
         
         tft.setCursor((tft.width()-getTextSize(str))/2,24+8);
         tft.print(str);
-        //playerDraw();
+        objDraw(playerObj);
         //tft.tft(); display.display()?
        
       
@@ -673,7 +750,7 @@ void sceneChange(String text, unsigned int nextState)
 {
   int sizex = getTextSize(text);
   
-  while (gamestate == GAME_GAMEOVER) {
+  while (gamestate != nextState) {
     
          clearScreen();
    
@@ -681,18 +758,15 @@ void sceneChange(String text, unsigned int nextState)
           tft.setTextSize(1);
           tft.setTextColor(ST7735_WHITE,ST7735_BLACK);
           tft.setCursor((tft.width()-sizex)/2,(tft.height()/2)-3);
-          tft.print("GAME OVER");
-                     
-          
-    
-         //tft.tft();display.display
+          tft.print(text);
+
          
     TIMER_CURRENT = millis();
     
       if (TIMER_CURRENT - TIMER_PREV > 3000) { 
       
         TIMER_PREV = TIMER_CURRENT;
-        gamestate = GAME_TITLE;
+        gamestate = nextState;
         clearScreen();
       }
         
@@ -701,11 +775,11 @@ void sceneChange(String text, unsigned int nextState)
 
 void resetGame() {
 
-  player_state = P_STILL; 
+  playerObj.state = P_STILL; 
   life = 3;
-  player_direction = 1;
-  player_position.x = 0;
-  player_position.y = 16/*tft.height()-pimageh-8*/;
+  playerObj.curDirection = 1;
+  playerObj.x = 0;
+  playerObj.y = 16/*tft.height()-pimageh-8*/;
   vspd = 0;
   hspd = 0;
 
@@ -738,7 +812,7 @@ void sceneGame() {
         //    gamestate = GAME_TITLE;
         
         
-        playerLogic(buttonPressing[2],buttonPressing[0],buttonPressed[1]);
+        objLogic(playerObj,buttonPressing[2],buttonPressing[0],buttonPressed[1]);
       
         //clearScreen(); 
         //if(camera.x != last_camera.x)
@@ -756,7 +830,7 @@ void sceneGame() {
         //tft.fillRect(64,72,8,8,ST7735_WHITE);
        // tft.println(freeRam(),DEC);
         
-        playerDraw();
+        objDraw(playerObj);
         drawGui();
         
         //tft.tft(); display.display
@@ -794,8 +868,7 @@ void setup()   {
   gameTilemap.settftPointer(&tft);
   gameTilemap.setTileMap(TileMap0);
 
-  ObjectData test(0,0,goomba0,goomba0,goomba0,goomba0,goomba0);
-  tft.println(test.x);
+  //ObjectData test(0,0,goomba0,goomba0,goomba0,goomba0,goomba0);
 };
 
 void printText(String text){

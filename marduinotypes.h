@@ -27,16 +27,18 @@ Vector2f(float xx, float yy) {
 struct ObjectData {
   uint8_t x;
   uint8_t y;
+  uint8_t imgSz;
   const unsigned char * curFrame;
   const unsigned char * frames[];
-  uint8_t objState;
+  uint8_t state;
   uint8_t curDirection;
   uint8_t lastDirection;
 
-  ObjectData(int xx, int yy, const unsigned char frameIdle,const unsigned char frameRun0, const unsigned char frameRun1, const unsigned char frameJump, const unsigned char frameDeath)
+  ObjectData(int xx, int yy, int imgSize, const unsigned char frameIdle,const unsigned char frameRun0, const unsigned char frameRun1, const unsigned char frameJump, const unsigned char frameDeath)
   {
     x= xx;
     y= yy;
+    imgSz = imgSize;
     frames[0] = frameIdle;
     frames[1] = frameRun0;
     frames[2] = frameRun1;
@@ -45,7 +47,7 @@ struct ObjectData {
     curFrame = frameIdle;
     curDirection = 0;
     lastDirection = 0;
-    objState = 0;
+    state = 0;
   };
 };
 

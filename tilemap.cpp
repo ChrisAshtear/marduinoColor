@@ -4,7 +4,7 @@
 #include "tilesetbitmap.h"
 #include "levels.h"
 
-#define MAP_HEIGHT 64
+#define MAP_HEIGHT 40
 //96 is in pixels, 12 in tiles
 //MONOCHROME BG layer?
 
