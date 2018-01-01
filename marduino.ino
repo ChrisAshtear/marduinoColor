@@ -469,30 +469,17 @@ void playerDraw() {
       flipH = true;
     }
   } else if (player_state == P_MOVE) {
-    
-    if (player_direction == 1) {
       switch (frame) {
         case 0: idxActual = mario1col; break;
         case 1: idxActual = mario0col;break;
         case 2: idxActual = mario2col;break;
         case 3: idxActual = mario0col;break;
       }
-    } else {
-      flipH = true;
-      switch (frame) {
-        case 0: idxActual = mario1col; break;
-        case 1: idxActual = mario0col; break;
-        case 2: idxActual = mario2col; break;
-        case 3: idxActual = mario0col; break;
+      if (player_direction != 1) {
+        flipH = true;
       }
-    }
-  
   }
-  //int yDif = abs(lastPosY - player_position.y);
-  
-  //
-  int yDif = abs(lastFrameY - player_position.y);
-  int xDif = abs(lastFrameX - player_position.x);
+
   int xStart = 0;
   int yStart = 0;
   if(lastFrameX < player_position.x)
@@ -512,13 +499,6 @@ void playerDraw() {
     yStart = player_position.y;
   }
   
-  if(lastFrameY != player_position.y && lastFrameX != player_position.y)
-  {
-    //tft.fillRect(xStart,yStart,xDif+pimagew+1,yDif+pimageh+1,ST7735_WHITE);
-  }
-  
-  
-  //tft.drawFastBitmap(player_position.x, player_position.y, frameAtual, pimagew,pimageh,1, ST7735_WHITE);
   tft.drawFastColorBitmap(player_position.x, player_position.y, pimagew,pimageh,idxActual,marioPal,flipH,false);
   // debug collision box
   //tft.fillRect(player_position.x+pboxoffsetx, player_position.y, 10, 16, ST7735_BLACK);
@@ -814,7 +794,8 @@ void setup()   {
   gameTilemap.settftPointer(&tft);
   gameTilemap.setTileMap(TileMap0);
 
-  
+  ObjectData test(0,0,goomba0,goomba0,goomba0,goomba0,goomba0);
+  tft.println(test.x);
 };
 
 void printText(String text){
