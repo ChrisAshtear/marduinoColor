@@ -37,6 +37,8 @@ struct ObjectData {
   int8_t lastDirection;
   boolean onAir = false;
   boolean check_pulo = false;
+  float hspd = 0;
+  float vspd = 0;
 
   ObjectData(int xx, int yy, int imgSize, const uint16_t objPal, const unsigned char* frameIdle,const unsigned char* frameRun0, const unsigned char* frameRun1, const unsigned char* frameJump, const unsigned char* frameDeath)
   {

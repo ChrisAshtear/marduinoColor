@@ -82,12 +82,10 @@ int lastPosY = 0;
 int lastFrameX = 0;
 int lastFrameY = 0;
 //horizontal speed vars
-float hspd = 0;
 float hspd_speed = 3.0;
 //jump vars and gravity control
 float grav = 0.6;
 float jumpspd = 4.0;
-float vspd = 0;
 //animation vars
 int frame = 0;
 int frameMax = 4;
@@ -103,7 +101,7 @@ Vector2f last_camera = {0,0};
 int camera_player_side = 0;
 
 ObjectData playerObj(0,0,16,marioPal,mario0col,mario1col,mario2col,marioJcol,mario0col);
-ObjectData goombaObj(24,32,8,tilePal,goomba0,goomba0,goomba1,goomba0,goomba2);
+ObjectData goombaObj(24,0,8,tilePal,goomba0,goomba0,goomba0,goomba0,goomba2);
 
     
 
@@ -183,54 +181,54 @@ boolean intersectionRect(float * rect1, float * rect2) {
 
 }
 
-void playerCollisionChecker(float hs, float vs) {
+void collisionChecker(ObjectData* obj,float hs, float vs) {
 
-  float playerRect[4] = {playerObj.x+pboxoffsetx+hs+camera.x, playerObj.y+vs,10,16};
+  float objRect[4] = {obj->x+pboxoffsetx+hs+camera.x, obj->y+vs,10,obj->imgSz};
   
   for (int i = 0; i < CollisionMap0Size*4; i += 4) {
   
     float rectTest[] = {pgm_read_word_near(&CollisionMap0[i]), pgm_read_word_near(&CollisionMap0[i+1]), pgm_read_word_near(&CollisionMap0[i+2]), pgm_read_word_near(&CollisionMap0[i+3])};
     
-        if (intersectionRect(playerRect,rectTest)) {
+        if (intersectionRect(objRect,rectTest)) {
           if (hs != 0) {
           
-              hspd = (int)hspd;
+              obj->hspd = (int)obj->hspd;
               //player_position.x = (int)player_position.x;
               boolean corrector = false;
     
               while (!corrector) {      
                    
-                  playerRect[0] = playerObj.x+pboxoffsetx+camera.x+sign(hspd);
+                  objRect[0] = obj->x+pboxoffsetx+camera.x+sign(obj->hspd);
                   
-                  if (!intersectionRect(playerRect,rectTest))  
-                    playerObj.x += sign(hspd);
+                  if (!intersectionRect(objRect,rectTest))  
+                    obj->x += sign(obj->hspd);
                   else 
                     corrector = true;
               }
               
-               hspd = 0;
+               obj->hspd = 0;
               
               break;
           }
           
           if (vs != 0) {
              
-              vspd = (int)vspd;
+              obj->vspd = (int)obj->vspd;
               //player_position.y = (int)player_position.y;
               boolean correctorY = false;
     
               while (!correctorY) {      
                    
-                  playerRect[1] = playerObj.y+camera.y+sign(vspd);
+                  objRect[1] = obj->y+camera.y+sign(obj->vspd);
                   
-                  if (!intersectionRect(playerRect,rectTest))  
-                    playerObj.y += sign(vspd);
+                  if (!intersectionRect(objRect,rectTest))  
+                    obj->y += sign(obj->vspd);
                   else 
                     correctorY = true;
               }
               
-               vspd = 0;
-               playerObj.check_pulo = false;
+               obj->vspd = 0;
+               obj->check_pulo = false;
               break;
           }
         }
@@ -261,7 +259,7 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
 //clearSection(player_position.x, player_position.y,pimagew,pimageh);
   if (obj->state != P_DEAD) {
   
-      hspd = 0;
+      obj->hspd = 0;
       boolean moving = false;
      
       if (move_esq == true && move_dir == false) {
@@ -273,10 +271,10 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
       }
       
       if (moving)
-          hspd = hspd_speed * (float)obj->curDirection;
+          obj->hspd = hspd_speed * (float)obj->curDirection;
 
       /*printText((String)"SPD: " + (String)hspd + (String)"\ndir" + (String)obj->curDirection + (String)"\nhspd_speed:" + (String)hspd_speed);*/
-      playerCollisionChecker(hspd,0);
+      collisionChecker(obj,obj->hspd,0);
       
       //player_position2.x += hspd;
       
@@ -284,19 +282,19 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
           if (obj->x > (tft.width()/2)-10)
             camera_player_side = 0;
           else
-            obj->x += hspd;
+            obj->x += obj->hspd;
     
           // screen limit <
           if (obj->x < 0) {
             obj->x = 0;
-            hspd = 0;
+            obj->hspd = 0;
           }  
     
        } else if (camera_player_side == 1) {
           if (obj->x < (tft.width()/2)-10)
             camera_player_side = 0;
           else
-            obj->x += hspd;
+            obj->x += obj->hspd;
             
           // screen limit >
           if (obj->x > tft.width()) {
@@ -310,14 +308,14 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
           last_camera.x = camera.x;
           //verify for limit side >
           if (camera.x >= 0 && camera.x <= gameTilemap.getMapWidth()*8-tft.width()) {
-            camera.x += hspd;
+            camera.x += obj->hspd;
           } if (camera.x > gameTilemap.getMapWidth()*8-tft.width()) {
             camera_player_side = 1;
             camera.x = gameTilemap.getMapWidth()*8-tft.width();
-            obj->x += hspd;
+            obj->x += obj->hspd;
           } if (camera.x < 0) {
             camera_player_side = -1;
-            obj->x += hspd; 
+            obj->x += obj->hspd; 
             camera.x = 0;  
           }
         } 
@@ -325,10 +323,10 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
       //VERTICAL MOVEMENT
     
       //gravidade (esta no ar)
-     float playerRect[4] = { camera.x+obj->x+pboxoffsetx,camera.y+obj->y+1, 10, 16 };
+     float playerRect[4] = { camera.x+obj->x+pboxoffsetx,camera.y+obj->y+1, 10, obj->imgSz };
       
       if (!verifyCollision(playerRect)) {
-        vspd += grav;
+        obj->vspd += grav;
         obj->check_pulo = true;
         obj->onAir = true;
       } else {
@@ -336,20 +334,20 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
       }
     
       // checa colisao com chao
-      if (vspd != 0) {
-          playerCollisionChecker(0,vspd);
+      if (obj->vspd != 0) {
+          collisionChecker(obj,0,obj->vspd);
       }
       
       if (jump == true && obj->check_pulo == false) {
-        vspd -= jumpspd;
+        obj->vspd -= jumpspd;
         obj->check_pulo = true;  
         tone(PIN_SPEAKER,400,100);
       }
       lastPosY = obj->y;
-      obj->y += vspd;
+      obj->y += obj->vspd;
       
       
-      if (vspd == 0 && !obj->onAir) {
+      if (obj->vspd == 0 && !obj->onAir) {
           obj->lastDirection = obj->curDirection;
           last_camera.x = camera.x;
           last_camera.y = obj->y;
@@ -365,19 +363,19 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
       }
     
     if (obj->state != P_DEAD) {
-       if (hspd == 0 && vspd == 0) {
+       if (obj->hspd == 0 && obj->vspd == 0) {
         if (obj->state != P_STILL) {
           obj->state = P_STILL;
           animInit = true;
         }
-      } else  if (hspd != 0 && vspd == 0) {
+      } else  if (obj->hspd != 0 && obj->vspd == 0) {
          if (obj->state != P_MOVE) {
           obj->state = P_MOVE;
           animInit = true;
         }
       } 
       
-      if (vspd != 0) {
+      if (obj->vspd != 0) {
         if (obj->state != P_JUMP) {
           obj->state = P_JUMP;
           animInit = true;
@@ -408,8 +406,8 @@ void playerDeath()
             camera.x = (int)((last_camera.x/8)*8);/*+(8*last_direction);*//*-(tft.width()/2)-8;*/
             camera.y = 0;
             playerObj.state = P_STILL;
-            vspd = 0;
-            hspd = 0;
+            playerObj.vspd = 0;
+            playerObj.hspd = 0;
             playerObj.check_pulo = false;
         } else {
             gamestate = GAME_GAMEOVER;
@@ -633,7 +631,6 @@ void sceneTitle() {
         tft.setCursor((tft.width()-getTextSize(str))/2,24+8);
         tft.print(str);
         objDraw(&playerObj);
-        objDraw(&goombaObj);
         //tft.tft(); display.display()?
        
       
@@ -697,8 +694,8 @@ void resetGame() {
   playerObj.curDirection = 1;
   playerObj.x = 0;
   playerObj.y = 0/*tft.height()-pimageh-8*/;
-  vspd = 0;
-  hspd = 0;
+  playerObj.vspd = 0;
+  playerObj.hspd = 0;
 
 
   camera.x = 0;
@@ -795,7 +792,7 @@ void setup()   {
 
   //atm necessary because assignment in constructor does not work.
   goombaObj.frames[0] = goomba0;
-  goombaObj.frames[1] = goomba1;
+  goombaObj.frames[1] = goomba0;
   goombaObj.frames[2] = goomba0;
   goombaObj.frames[3] = goomba0;
   goombaObj.frames[4] = goomba2;
