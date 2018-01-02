@@ -7,7 +7,7 @@
 const int CollisionMap0Size = 15;
 const int CollisionMap1Size = 23;//23
 
-TILEMAPSET CollisionMap0[] = {
+COLMAP CollisionMap0[] = {
  0, 40, 120, 8,
 120, 32, 48, 8,
 184, 32, 24, 8,

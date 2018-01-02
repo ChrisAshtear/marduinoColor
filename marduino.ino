@@ -72,7 +72,6 @@ int life = 3;
 long playertimer = 0;
 long playertimer_prev = 0;
 //posicao do mario
-Vector2f player_position2(0,tft.height()-16-8);
 Vector2f last_safe_position(0,tft.height()-16-8);
 
 int lastPosY = 0;
@@ -86,8 +85,6 @@ float hspd_speed = 3.0;
 float grav = 0.6;
 float jumpspd = 4.0;
 float vspd = 0;
-boolean onAir = false;
-boolean check_pulo = false;
 //animation vars
 int frame = 0;
 int frameMax = 4;
@@ -102,7 +99,8 @@ Vector2f camera = {0,0};
 Vector2f last_camera = {0,0};
 int camera_player_side = 0;
 
-ObjectData playerObj(0,tft.height()-16-8,16,marioPal,mario0col,mario1col,mario2col,marioJcol,mario0col);
+ObjectData playerObj(0,0,16,marioPal,mario0col,mario1col,mario2col,marioJcol,mario0col);
+ObjectData goombaObj(24,32,8,tilePal,goomba0,goomba0,goomba1,goomba0,goomba2);
 
     
 
@@ -229,7 +227,7 @@ void playerCollisionChecker(float hs, float vs) {
               }
               
                vspd = 0;
-               check_pulo = false;
+               playerObj.check_pulo = false;
               break;
           }
         }
@@ -254,52 +252,50 @@ boolean verifyCollision(float * rect) {
     return false;
 }
 
-void objLogic(ObjectData obj, boolean move_esq, boolean move_dir, boolean jump) {
+void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump) {
 
-  lastFrameX = obj.x;
-  lastFrameY = obj.y;
   //HORIZONTAL MOVEMENT
 //clearSection(player_position.x, player_position.y,pimagew,pimageh);
-  if (obj.state != P_DEAD) {
+  if (obj->state != P_DEAD) {
   
       hspd = 0;
       boolean moving = false;
      
       if (move_esq == true && move_dir == false) {
-          obj.curDirection = 1;
+          obj->curDirection = 1;
           moving = true;
       } else if (move_dir == true && move_esq == false) {
-          obj.curDirection = -1;
+          obj->curDirection = -1;
           moving = true;
       }
       
       if (moving)
-          hspd = hspd_speed * (float)obj.curDirection;
+          hspd = hspd_speed * (float)obj->curDirection;
     
       playerCollisionChecker(hspd,0);
       
-      player_position2.x += hspd;
+      //player_position2.x += hspd;
       
        if (camera_player_side == -1) {
-          if (obj.x > (tft.width()/2)-10)
+          if (obj->x > (tft.width()/2)-10)
             camera_player_side = 0;
           else
-            obj.x += hspd;
+            obj->x += hspd;
     
           // screen limit <
-          if (obj.x < 0) {
-            obj.x = 0;
+          if (obj->x < 0) {
+            obj->x = 0;
             hspd = 0;
           }  
     
        } else if (camera_player_side == 1) {
-          if (obj.x < (tft.width()/2)-10)
+          if (obj->x < (tft.width()/2)-10)
             camera_player_side = 0;
           else
-            obj.x += hspd;
+            obj->x += hspd;
             
           // screen limit >
-          if (obj.x > tft.width()) {
+          if (obj->x > tft.width()) {
             gamestate = GAME_TITLE;
             /*player_position.x = tft.width()-pimagew;
             hspd = 0;*/
@@ -314,10 +310,10 @@ void objLogic(ObjectData obj, boolean move_esq, boolean move_dir, boolean jump) 
           } if (camera.x > gameTilemap.getMapWidth()*8-tft.width()) {
             camera_player_side = 1;
             camera.x = gameTilemap.getMapWidth()*8-tft.width();
-            obj.x += hspd;
+            obj->x += hspd;
           } if (camera.x < 0) {
             camera_player_side = -1;
-            obj.x += hspd; 
+            obj->x += hspd; 
             camera.x = 0;  
           }
         } 
@@ -325,14 +321,14 @@ void objLogic(ObjectData obj, boolean move_esq, boolean move_dir, boolean jump) 
       //VERTICAL MOVEMENT
     
       //gravidade (esta no ar)
-     float playerRect[4] = { camera.x+obj.x+pboxoffsetx,camera.y+obj.y+1, 10, 16 };
+     float playerRect[4] = { camera.x+obj->x+pboxoffsetx,camera.y+obj->y+1, 10, 16 };
       
       if (!verifyCollision(playerRect)) {
         vspd += grav;
-        check_pulo = true;
-        onAir = true;
+        obj->check_pulo = true;
+        obj->onAir = true;
       } else {
-        onAir = false;
+        obj->onAir = false;
       }
     
       // checa colisao com chao
@@ -340,46 +336,46 @@ void objLogic(ObjectData obj, boolean move_esq, boolean move_dir, boolean jump) 
           playerCollisionChecker(0,vspd);
       }
       
-      if (jump == true && check_pulo == false) {
+      if (jump == true && obj->check_pulo == false) {
         vspd -= jumpspd;
-        check_pulo = true;  
+        obj->check_pulo = true;  
         tone(PIN_SPEAKER,400,100);
       }
-      lastPosY = obj.y;
-      obj.y += vspd;
-      player_position2.y += vspd;
+      lastPosY = obj->y;
+      obj->y += vspd;
       
-      if (vspd == 0 && !onAir) {
-          obj.lastDirection = obj.curDirection;
+      
+      if (vspd == 0 && !obj->onAir) {
+          obj->lastDirection = obj->curDirection;
           last_camera.x = camera.x;
-          last_camera.y = player_position2.y;
-          last_safe_position.x = obj.x;
-          last_safe_position.y = obj.y;
+          last_camera.y = obj->y;
+          last_safe_position.x = obj->x;
+          last_safe_position.y = obj->y;
       }
       
       //fall
 
-      if (obj.y+camera.y > gameTilemap.getMapHeight()*gameTilemap.getTileHeight()) {
-          if (obj.state != P_DEAD)
-              obj.state = P_DEAD;
+      if (obj->y+camera.y > gameTilemap.getMapHeight()*gameTilemap.getTileHeight()) {
+          if (obj->state != P_DEAD)
+              obj->state = P_DEAD;
       }
     
-    if (obj.state != P_DEAD) {
+    if (obj->state != P_DEAD) {
        if (hspd == 0 && vspd == 0) {
-        if (obj.state != P_STILL) {
-          obj.state = P_STILL;
+        if (obj->state != P_STILL) {
+          obj->state = P_STILL;
           animInit = true;
         }
       } else  if (hspd != 0 && vspd == 0) {
-         if (obj.state != P_MOVE) {
-          obj.state = P_MOVE;
+         if (obj->state != P_MOVE) {
+          obj->state = P_MOVE;
           animInit = true;
         }
       } 
       
       if (vspd != 0) {
-        if (obj.state != P_JUMP) {
-          obj.state = P_JUMP;
+        if (obj->state != P_JUMP) {
+          obj->state = P_JUMP;
           animInit = true;
          }   
       }
@@ -396,15 +392,15 @@ void objLogic(ObjectData obj, boolean move_esq, boolean move_dir, boolean jump) 
           life--;
           
           if (life > 0) {  
-            obj.x = (int)((last_safe_position.x/8)*8);/*+(8*-last_direction);*/
-            obj.y = (int)((last_safe_position.y/8)*8);
-            player_position2.x = obj.x;
+            obj->x = (int)((last_safe_position.x/8)*8);/*+(8*-last_direction);*/
+            obj->y = (int)((last_safe_position.y/8)*8);
+            
             camera.x = (int)((last_camera.x/8)*8);/*+(8*last_direction);*//*-(tft.width()/2)-8;*/
             camera.y = 0;
-            obj.state = P_STILL;
+            obj->state = P_STILL;
             vspd = 0;
             hspd = 0;
-            check_pulo = false;
+            obj->check_pulo = false;
         } else {
             gamestate = GAME_GAMEOVER;
         }
@@ -413,13 +409,13 @@ void objLogic(ObjectData obj, boolean move_esq, boolean move_dir, boolean jump) 
   
 }
 
-void objDraw(ObjectData obj) {
+void objDraw(ObjectData* obj) {
   
   //get size of playerbox & player position, then fill that box with bg color.
   //BMP * frameAtual;
   const unsigned char * frameAtual;
   const unsigned char * idxActual;
-  idxActual = playerObj.frames[0];
+  idxActual = obj->frames[0];
   bool flipH = false;
   //animation setup
   if (animInit) {
@@ -427,10 +423,10 @@ void objDraw(ObjectData obj) {
     frame = 0;
     frameCounter = 0;   
     
-    if (obj.state == P_STILL || obj.state == P_JUMP) {
+    if (obj->state == P_STILL || obj->state == P_JUMP) {
       frameSpd = 0.;
       frameMax = 1; 
-    } else if (obj.state == P_MOVE) {
+    } else if (obj->state == P_MOVE) {
       frameSpd = 0.8;
       frameMax = 4;
     }
@@ -451,139 +447,49 @@ void objDraw(ObjectData obj) {
     }
   }
   
-  if (obj.curDirection != 1) 
+  if (obj->curDirection != 1) 
     flipH = true;
   //frames manager 
-  idxActual = obj.frames[0]; //idle
+  idxActual = obj->frames[0]; //idle
 
-  if (obj.state == P_JUMP) {
-    idxActual = obj.frames[2];
+  if (obj->state == P_JUMP) {
+    idxActual = obj->frames[3];
   }
-  else if (obj.state == P_MOVE) {
+  else if (obj->state == P_MOVE) {
       switch (frame) {
-        case 0: idxActual = obj.frames[1]; break;
-        case 1: idxActual = obj.frames[0];break;
-        case 2: idxActual = obj.frames[2];break;
-        case 3: idxActual = obj.frames[0];break;
+        case 0: idxActual = obj->frames[1]; break;
+        case 1: idxActual = obj->frames[0];break;
+        case 2: idxActual = obj->frames[2];break;
+        case 3: idxActual = obj->frames[0];break;
       }
   }
 
   int xStart = 0;
   int yStart = 0;
-  if(lastFrameX < obj.x)
+  if(lastFrameX < obj->x)
   {
     xStart = lastFrameX;
   }
   else
   {
-    xStart = obj.x;
+    xStart = obj->x;
   }
-  if(lastFrameY < obj.y)
+  if(lastFrameY < obj->y)
   {
     yStart = lastFrameY;
   }
   else
   {
-    yStart = obj.y;
+    yStart = obj->y;
   }
 
-  tft.drawFastColorBitmap(playerObj.x, playerObj.y, obj.imgSz,obj.imgSz,idxActual,playerObj.pal,flipH,false);
+  tft.drawFastColorBitmap(obj->x,obj->y, obj->imgSz,obj->imgSz,idxActual,obj->pal,flipH,false);
   //tft.drawFastColorBitmap(64, 64, 16,16,mario0col,marioPal,flipH,false);
   // debug collision box
   //tft.fillRect(player_position.x+pboxoffsetx, player_position.y, 10, 16, ST7735_BLACK);
 
 }
 
-
-/*void playerDraw() {
-  
-  //get size of playerbox & player position, then fill that box with bg color.
-  //BMP * frameAtual;
-  const unsigned char * frameAtual;
-  const unsigned char * idxActual;
-  bool flipH = false;
-  //animation setup
-  if (animInit) {
-  
-    frame = 0;
-    frameCounter = 0;   
-    
-    if (player_state == P_STILL || player_state == P_JUMP) {
-      frameSpd = 0.;
-      frameMax = 1; 
-    } else if (player_state == P_MOVE) {
-      frameSpd = 0.8;
-      frameMax = 4;
-    }
-  
-     animInit = false;
-  }
-  
-  //controlador de tempo de frames
-  if (frameMax > 1) {
-    frameCounter += frameSpd*DELAY;
-    
-    if (frameCounter > DELAY) {
-      frame++;
-      frameCounter = 0;
-      if (frame > frameMax-1) {
-        frame = 0;
-      }
-    }
-  }
-  
-  //frames manager 
-  idxActual = mario0col;
-  if (player_state == P_STILL) {
-   if (player_direction == 1) 
-    flipH = false;
-   else
-   flipH = true;
-  } else if (player_state == P_JUMP) {
-    if (player_direction == 1) {
-      idxActual = marioJcol;
-    }
-    else{
-      idxActual = marioJcol;
-      flipH = true;
-    }
-  } else if (player_state == P_MOVE) {
-      switch (frame) {
-        case 0: idxActual = mario1col; break;
-        case 1: idxActual = mario0col;break;
-        case 2: idxActual = mario2col;break;
-        case 3: idxActual = mario0col;break;
-      }
-      if (player_direction != 1) {
-        flipH = true;
-      }
-  }
-
-  int xStart = 0;
-  int yStart = 0;
-  if(lastFrameX < player_position.x)
-  {
-    xStart = lastFrameX;
-  }
-  else
-  {
-    xStart = player_position.x;
-  }
-  if(lastFrameY < player_position.y)
-  {
-    yStart = lastFrameY;
-  }
-  else
-  {
-    yStart = player_position.y;
-  }
-  
-  tft.drawFastColorBitmap(player_position.x, player_position.y, pimagew,pimageh,idxActual,marioPal,flipH,false);
-  // debug collision box
-  //tft.fillRect(player_position.x+pboxoffsetx, player_position.y, 10, 16, ST7735_BLACK);
-
-}
-*/
 int counterGUI = 0;
 
 void drawGui() {
@@ -718,8 +624,8 @@ void sceneTitle() {
         
         tft.setCursor((tft.width()-getTextSize(str))/2,24+8);
         tft.print(str);
-        objDraw(playerObj);
-        
+        objDraw(&playerObj);
+        objDraw(&goombaObj);
         //tft.tft(); display.display()?
        
       
@@ -782,7 +688,7 @@ void resetGame() {
   life = 3;
   playerObj.curDirection = 1;
   playerObj.x = 0;
-  playerObj.y = 16/*tft.height()-pimageh-8*/;
+  playerObj.y = 0/*tft.height()-pimageh-8*/;
   vspd = 0;
   hspd = 0;
 
@@ -792,7 +698,7 @@ void resetGame() {
   last_camera.x = 0;
   last_camera.y = 0;
   camera_player_side = -1;
-  check_pulo = false;
+  playerObj.check_pulo = false;
 
 }
 
@@ -815,8 +721,8 @@ void sceneGame() {
         //    gamestate = GAME_TITLE;
         
         
-        objLogic(playerObj,buttonPressing[2],buttonPressing[0],buttonPressed[1]);
-      
+        objLogic(&playerObj,buttonPressing[2],buttonPressing[0],buttonPressed[1]);
+        objLogic(&goombaObj,false,false,false);
         //clearScreen(); 
         //if(camera.x != last_camera.x)
         //{
@@ -833,7 +739,8 @@ void sceneGame() {
         //tft.fillRect(64,72,8,8,ST7735_WHITE);
        // tft.println(freeRam(),DEC);
         
-        objDraw(playerObj);
+        objDraw(&playerObj);
+        objDraw(&goombaObj);
         drawGui();
         
         //tft.tft(); display.display
@@ -877,6 +784,13 @@ void setup()   {
   playerObj.frames[2] = mario2col;
   playerObj.frames[3] = marioJcol;
   playerObj.frames[4] = mario0col;
+
+  //atm necessary because assignment in constructor does not work.
+  goombaObj.frames[0] = goomba0;
+  goombaObj.frames[1] = goomba1;
+  goombaObj.frames[2] = goomba0;
+  goombaObj.frames[3] = goomba0;
+  goombaObj.frames[4] = goomba2;
   //ObjectData test(0,0,goomba0,goomba0,goomba0,goomba0,goomba0);
 };
 
@@ -911,7 +825,7 @@ void clearSection(int16_t x, int16_t y, int16_t w, int16_t h)
 
 void clearTileMap()
 {
-  tft.fillRect(0,0,tft.width(),48,ST7735_WHITE);
+  tft.fillRect(0,0,tft.width(),40,ST7735_WHITE);
 }
 
 void loop() {

@@ -8,6 +8,7 @@
 //#define TILEMAPSET const unsigned int PROGMEM
 
 typedef const unsigned char PROGMEM BMP;
+typedef const uint16_t PROGMEM COLMAP;
 typedef const uint8_t PROGMEM TILEMAPSET;
 typedef const uint8_t PROGMEM COLORIDX;
 typedef const uint16_t PROGMEM PAL;
@@ -25,8 +26,8 @@ Vector2f(float xx, float yy) {
 };
 
 struct ObjectData {
-  uint8_t x;
-  uint8_t y;
+  int16_t x;
+  int16_t y;
   uint8_t imgSz;
   const unsigned char * curFrame;
   const unsigned char * frames[5];
@@ -34,9 +35,12 @@ struct ObjectData {
   uint8_t state;
   uint8_t curDirection;
   uint8_t lastDirection;
+  boolean onAir = false;
+  boolean check_pulo = false;
 
   ObjectData(int xx, int yy, int imgSize, const uint16_t objPal, const unsigned char* frameIdle,const unsigned char* frameRun0, const unsigned char* frameRun1, const unsigned char* frameJump, const unsigned char* frameDeath)
   {
+
     x= xx;
     y= yy;
     imgSz = imgSize;
