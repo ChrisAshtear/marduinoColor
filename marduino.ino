@@ -62,6 +62,9 @@ TileMap gameTilemap;
 
 #define PIN_SPEAKER 12
 
+#define DEBUGX 16
+#define DEBUGY 80
+
 
 unsigned int gamestate = GAME_INTRO; // game state
 long TIMER_PREV = 0; // timer 
@@ -271,7 +274,8 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
       
       if (moving)
           hspd = hspd_speed * (float)obj->curDirection;
-    
+
+      /*printText((String)"SPD: " + (String)hspd + (String)"\ndir" + (String)obj->curDirection + (String)"\nhspd_speed:" + (String)hspd_speed);*/
       playerCollisionChecker(hspd,0);
       
       //player_position2.x += hspd;
@@ -382,9 +386,15 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
     
       
      }
-  } else {
+  } else if(obj == &playerObj) {
+    playerDeath();   
+  }
   
-   playertimer++; // every DELAY | 1 = 75 millis
+}
+
+void playerDeath()
+{
+    playertimer++; // every DELAY | 1 = 75 millis
     
     if (playertimer > 1000/75) { // 1 sec
     
@@ -392,21 +402,19 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
           life--;
           
           if (life > 0) {  
-            obj->x = (int)((last_safe_position.x/8)*8);/*+(8*-last_direction);*/
-            obj->y = (int)((last_safe_position.y/8)*8);
+            playerObj.x = (int)((last_safe_position.x/8)*8);/*+(8*-last_direction);*/
+            playerObj.y = (int)((last_safe_position.y/8)*8);
             
             camera.x = (int)((last_camera.x/8)*8);/*+(8*last_direction);*//*-(tft.width()/2)-8;*/
             camera.y = 0;
-            obj->state = P_STILL;
+            playerObj.state = P_STILL;
             vspd = 0;
             hspd = 0;
-            obj->check_pulo = false;
+            playerObj.check_pulo = false;
         } else {
             gamestate = GAME_GAMEOVER;
         }
    }
-  }
-  
 }
 
 void objDraw(ObjectData* obj) {
@@ -795,7 +803,8 @@ void setup()   {
 };
 
 void printText(String text){
-  tft.setCursor(0, 0);
+  tft.setCursor(DEBUGX, DEBUGY);
+  tft.fillRect(DEBUGX,DEBUGY,getTextSize(text),8,ST7735_WHITE);
   tft.setTextColor(ST7735_BLACK);  tft.setTextSize(1);
   tft.println(text);
 }

@@ -33,8 +33,8 @@ struct ObjectData {
   const unsigned char * frames[5];
   const uint16_t * pal;
   uint8_t state;
-  uint8_t curDirection;
-  uint8_t lastDirection;
+  int8_t curDirection;
+  int8_t lastDirection;
   boolean onAir = false;
   boolean check_pulo = false;
 
