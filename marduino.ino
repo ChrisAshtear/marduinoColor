@@ -62,9 +62,12 @@ TileMap gameTilemap;
 
 #define PIN_SPEAKER 12
 
+#define DEBUGMODE false
+
 #define DEBUGX 16
 #define DEBUGY 80
 
+#define TILEMAP_YOFFSET 24
 
 unsigned int gamestate = GAME_INTRO; // game state
 long TIMER_PREV = 0; // timer 
@@ -100,10 +103,17 @@ Vector2f camera = {0,0};
 Vector2f last_camera = {0,0};
 int camera_player_side = 0;
 
-ObjectData playerObj(0,0,16,marioPal,mario0col,mario1col,mario2col,marioJcol,mario0col);
+//guiData
+uint8_t world = 1;
+uint8_t lvl = 1;
+uint16_t score = 0;
+uint16_t timeLeft = 400;
+uint8_t coins = 0;
+
+ObjectData playerObj(0,24,16,marioPal,mario0col,mario1col,mario2col,marioJcol,mario0col);
 ObjectData goombaObj(24,0,8,tilePal,goomba0,goomba0,goomba0,goomba0,goomba2);
 
-    
+
 
 float sign(float x) {
 
@@ -187,7 +197,7 @@ void collisionChecker(ObjectData* obj,float hs, float vs) {
   
   for (int i = 0; i < CollisionMap0Size*4; i += 4) {
   
-    float rectTest[] = {pgm_read_word_near(&CollisionMap0[i]), pgm_read_word_near(&CollisionMap0[i+1]), pgm_read_word_near(&CollisionMap0[i+2]), pgm_read_word_near(&CollisionMap0[i+3])};
+    float rectTest[] = {pgm_read_word_near(&CollisionMap0[i]), pgm_read_word_near(&CollisionMap0[i+1])+TILEMAP_YOFFSET, pgm_read_word_near(&CollisionMap0[i+2]), pgm_read_word_near(&CollisionMap0[i+3])};
     
         if (intersectionRect(objRect,rectTest)) {
           if (hs != 0) {
@@ -242,7 +252,7 @@ boolean verifyCollision(float * rect) {
 
     for (int i = 0; i < CollisionMap0Size*4; i += 4) {
   
-      float rectTest[4] = {pgm_read_word_near(&CollisionMap0[i]), pgm_read_word_near(&CollisionMap0[i+1]), pgm_read_word_near(&CollisionMap0[i+2]), pgm_read_word_near(&CollisionMap0[i+3])};
+      float rectTest[4] = {pgm_read_word_near(&CollisionMap0[i]), pgm_read_word_near(&CollisionMap0[i+1])+ TILEMAP_YOFFSET, pgm_read_word_near(&CollisionMap0[i+2]), pgm_read_word_near(&CollisionMap0[i+3])};
     
         if (intersectionRect(rect,rectTest)) {
                return true;
@@ -357,10 +367,10 @@ void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump)
       
       //fall
 
-      if (obj->y+camera.y > gameTilemap.getMapHeight()*gameTilemap.getTileHeight()) {
-          if (obj->state != P_DEAD)
-              obj->state = P_DEAD;
-      }
+      /*if (obj->y+camera.y > (gameTilemap.getMapHeight()+TILEMAP_YOFFSET)*gameTilemap.getTileHeight()) {
+          if (obj->state != P_DEAD){}
+              //obj->state = P_DEAD;
+      }*/
     
     if (obj->state != P_DEAD) {
        if (obj->hspd == 0 && obj->vspd == 0) {
@@ -501,16 +511,25 @@ int counterGUI = 0;
 void drawGui() {
 
   String stringint = String(life,DEC);
-  String string = String("x" + stringint);
   //String stringint = String(counterGUI,DEC);
   //String string = String("time:" + stringint);
   //counterGUI++;
-  
+  String strworld = String(world) + '-' + String(lvl);
+  String strscore = String(score);
+  String strtime = String(timeLeft);
+  String strcoin = String(coins);
   tft.setTextSize(1);
   tft.setTextColor(ST7735_BLACK,ST7735_WHITE);
-  tft.setCursor(0,0);
-  tft.print(string);
-
+  tft.setCursor(40,0);
+  tft.print(stringint);
+  tft.setCursor(64,8);
+  tft.print(strworld);
+  tft.setCursor(0,8);
+  tft.print(strscore);
+  tft.setCursor(108,8);
+  tft.print(strtime);
+  tft.setCursor(48,8);
+  tft.print(strcoin);
 }
 
 void sceneIntro() {
@@ -600,16 +619,7 @@ void sceneTitle() {
        tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, 0, toplogo, toplogo_width, toplogo_height,ST7735_BLUE);
        tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, botlogo, botlogo_width, botlogo_height,ST7735_RED);
       // tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, shadow, shadow_width, shadow_height,ST7735_BLACK);
-       //
-      //_tft->drawFastColorBitmap(x, y,_tileWidth,_tileHeight,*tilePtr,tilePal);
-      //tft.drawCBMPsection(16,64,16,16,mario0col,marioPal,16,16,0,false,true);
-       //tft.drawFastColorBitmap(16,16,8,8,tilePtr,tilePal);
-     //long time = millis();
-      //tft.drawCBMPsection(16,64,16,16,mario0col,marioPal,16,16,0,false,true);
-      //time = millis() - time;
-      //tft.setCursor(64,64);
-      //tft.fillRect(64,64,8,8,ST7735_WHITE);
-      //tft.println(time,DEC);
+
       
        
        String output;
@@ -693,7 +703,7 @@ void resetGame() {
   life = 3;
   playerObj.curDirection = 1;
   playerObj.x = 0;
-  playerObj.y = 0/*tft.height()-pimageh-8*/;
+  playerObj.y = 32/*tft.height()-pimageh-8*/;
   playerObj.vspd = 0;
   playerObj.hspd = 0;
 
@@ -705,13 +715,45 @@ void resetGame() {
   camera_player_side = -1;
   playerObj.check_pulo = false;
 
+
+  world = 1;
+  lvl = 1;
+  score = 0;
+  timeLeft = 400;
+  coins = 0;
+}
+
+void initGameScreen(){
+  uint8_t width = tft.width();
+  //first row - GUI elements
+  //2nd row - GUI elements
+  //3rd row - solid sky fade out
+  //4th row - interlaced sky fade out
+  
+  //draw top sky fade
+  tft.setCursor(0, 0);
+  tft.setTextColor(ST7735_BLACK);
+  tft.println("MARIOx    WORLD  TIME");
+  tft.fillRect(0,16,width,8,0x4499);
+  //draw bot sky fade
+  for(uint8_t i = 0; i< 8; i+=2)
+  {
+    tft.fillRect(0,24+i,width,1,0x4499);
+    tft.fillRect(0,25+i,width,1,ST7735_WHITE);
+  }
+  
 }
 
 void sceneGame() {
 
   resetGame();
-  
-  
+  initGameScreen();
+  //times for functions
+  //objlogic - 0-1ms idle, 3ms when jumping.
+  //drawMap - 48ms
+  //objDraw - 2ms
+  //drawGui - 12ms
+  //drawGUI - initial draw, then update life/score etc.
   while (gamestate == GAME_PLAY) {
   
     TIMER_CURRENT = millis();
@@ -725,28 +767,48 @@ void sceneGame() {
         //if (buttonPressing[2] && buttonPressing[1] && buttonPressing[0]) 
         //    gamestate = GAME_TITLE;
         
-        
+        #if DEBUGMODE
+        long timeChk = millis();
+        String output = "";
+        #endif
         objLogic(&playerObj,buttonPressing[2],buttonPressing[0],buttonPressed[1]);
-        objLogic(&goombaObj,false,false,false);
-        //clearScreen(); 
-        //if(camera.x != last_camera.x)
-        //{
-        //clearTileMap();
-        //}
+        #if DEBUGMODE
+        timeChk = millis() - timeChk;
+        output += (String)"objLogic:" + (String)timeChk + (String)"\n";
+        #endif
+        
+        //objLogic(&goombaObj,false,false,false);
 
         //long time = millis();
+
+
+        #if DEBUGMODE
+        timeChk = millis();
+        #endif
         gameTilemap.drawMap(camera.x,camera.y);
-        //time = millis() - time;
-       //// tft.setCursor(64,64);
-        //tft.fillRect(64,64,8,8,ST7735_WHITE);
-        //tft.println(time,DEC);
-        //tft.setCursor(64,72);
-        //tft.fillRect(64,72,8,8,ST7735_WHITE);
-       // tft.println(freeRam(),DEC);
-        
+        #if DEBUGMODE
+        timeChk = millis() - timeChk;
+        output +=(String)"drawMap:" + (String)timeChk + (String)"\n";
+        #endif
+
+        #if DEBUGMODE
+        timeChk = millis();
+        #endif
         objDraw(&playerObj);
-        objDraw(&goombaObj);
+        #if DEBUGMODE
+        timeChk = millis() - timeChk;
+        output +=(String)"objDraw:" + (String)timeChk + (String)"\n";
+        #endif
+        //objDraw(&goombaObj);
+        #if DEBUGMODE
+        timeChk = millis();
+        #endif
         drawGui();
+        #if DEBUGMODE
+        timeChk = millis() - timeChk;
+        output +=(String)"drawGUI:" + (String)timeChk + (String)"\n";
+        printText(output);
+        #endif
         
         //tft.tft(); display.display
     }

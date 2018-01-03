@@ -73,6 +73,7 @@
 	
 	void TileMap::drawMap(int xcamera, int ycamera) {
 
+    uint8_t yOffset = 32;
 		//define tile x and y index iterator
 		int it_start[2] = {0,0};
 		int it_end[2] = {1,1};
@@ -95,7 +96,7 @@
       tileIndex = pgm_read_word_near(&_tileMapID[tileIndex]);
       
       if (tileIndex != -1)  
-		    drawTile(tileIndex,xcamera+(xx*_tileWidth),8+ycamera+(yy*_tileHeight));
+		    drawTile(tileIndex,xcamera+(xx*_tileWidth),yOffset+ycamera+(yy*_tileHeight));
                         //Serial.print(test);
                         //Serial.print("\n");    // prints a tab
 
