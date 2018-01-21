@@ -39,8 +39,9 @@ struct ObjectData {
   boolean check_pulo = false;
   float hspd = 0;
   float vspd = 0;
+  uint16_t maxRLEsz;
 
-  ObjectData(int xx, int yy, int imgSize, const uint16_t objPal, const unsigned char* frameIdle,const unsigned char* frameRun0, const unsigned char* frameRun1, const unsigned char* frameJump, const unsigned char* frameDeath)
+  ObjectData(int xx, int yy, int imgSize, uint16_t maxRLE, const uint16_t objPal, const unsigned char* frameIdle,const unsigned char* frameRun0, const unsigned char* frameRun1, const unsigned char* frameJump, const unsigned char* frameDeath)
   {
 
     x= xx;
@@ -56,6 +57,7 @@ struct ObjectData {
     curDirection = 1;
     lastDirection = 0;
     state = 0;
+    maxRLEsz = maxRLE;
   };
 };
 

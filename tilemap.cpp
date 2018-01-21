@@ -63,7 +63,7 @@
 	void TileMap::drawTile(const unsigned int id, int x, int y) {
     int16_t setWidth = TILESETW;
     int16_t setHeight = TILESETH;
-      _tft->drawCBMPsection(x,y,_tileWidth,_tileHeight,tileSet,tilePal,setWidth,setHeight,id,false,false);
+      _tft->drawCBMPsection(x,y,_tileWidth,_tileHeight,tileSet,tilePal,setWidth,setHeight,id,false,false,4);
       //const unsigned char *tilePtr[_tileHeight * _tileHeight]= {tileSet+((_tileHeight * _tileHeight)*id)};
       //_tft->drawFastColorBitmap(x, y,_tileWidth,_tileHeight,*tilePtr,tilePal);
 			//_tft->drawFastBitmap(x, y, tileToDraw, _tileWidth,_tileHeight,1,ST7735_WHITE);

@@ -1,24 +1,24 @@
 /*
- * Super Marduino
- * A platform game with Arduino Uno.
- * 
- * Requirements:
- * Nokia 5510 tft and three buttons.
- * Additional libraries: Adafruit GFX and Adafruit_PCD8544.
- * 
- * Created by Tobias Beise Ulrich
- * http://tobiasbu.github.io/website 
- * 
- * GitHub:
- * https://github.com/tobiasbu/marduino
- * 
- * 2014-2016.
- * 
- * -------------------------------------
- * LAST UPDATE: 15/06/2016
- * Header information update.
- * 
- */
+   Super Marduino
+   A platform game with Arduino Uno.
+
+   Requirements:
+   Nokia 5510 tft and three buttons.
+   Additional libraries: Adafruit GFX and Adafruit_PCD8544.
+
+   Created by Tobias Beise Ulrich
+   http://tobiasbu.github.io/website
+
+   GitHub:
+   https://github.com/tobiasbu/marduino
+
+   2014-2016.
+
+   -------------------------------------
+   LAST UPDATE: 15/06/2016
+   Header information update.
+
+*/
 
 #include <SPI.h>
 #include <Adafruit_GFX.h>
@@ -62,15 +62,17 @@ TileMap gameTilemap;
 
 #define PIN_SPEAKER 12
 
-#define DEBUGMODE false
+#define DEBUGMODE true
 
 #define DEBUGX 16
 #define DEBUGY 80
 
 #define TILEMAP_YOFFSET 24
 
+
+
 unsigned int gamestate = GAME_INTRO; // game state
-long TIMER_PREV = 0; // timer 
+long TIMER_PREV = 0; // timer
 unsigned long TIMER_CURRENT = 0;
 //mario img
 //marduino settings
@@ -78,7 +80,7 @@ int life = 3;
 long playertimer = 0;
 long playertimer_prev = 0;
 //posicao do mario
-Vector2f last_safe_position(0,tft.height()-16-8);
+Vector2f last_safe_position(0, tft.height() - 16 - 8);
 
 int lastPosY = 0;
 
@@ -96,11 +98,11 @@ float frameSpd = 1;
 float frameCounter = 0;
 boolean animInit = false;
 //collision box offset
-float pboxoffsetx = 3; 
+float pboxoffsetx = 3;
 
 // camera control
-Vector2f camera = {0,0};
-Vector2f last_camera = {0,0};
+Vector2f camera = {0, 0};
+Vector2f last_camera = {0, 0};
 int camera_player_side = 0;
 
 //guiData
@@ -110,8 +112,10 @@ uint16_t score = 0;
 uint16_t timeLeft = 400;
 uint8_t coins = 0;
 
-ObjectData playerObj(0,24,16,marioPal,mario0col,mario1col,mario2col,marioJcol,mario0col);
-ObjectData goombaObj(24,0,8,tilePal,goomba0,goomba0,goomba0,goomba0,goomba2);
+//int rleSizes[5] = {82,95,96,103,82};
+ObjectData playerObj(0, 24, 16, 103, marioPal, mario0col, mario1col, mario2col, marioJcol, mario0col);
+//int rleSizes2[5] = {25,25,25,25,16};
+ObjectData goombaObj(24, 0, 8, 25, tilePal, goomba0, goomba0, goomba0, goomba0, goomba2);
 
 
 
@@ -121,69 +125,69 @@ float sign(float x) {
     return 1;
   else if (x < 0)
     return -1;
-  
+
   return 0;
-  
+
 };
 
 
 
-boolean buttonPressing[] = {false,false,false}; // button is pressing
-boolean buttonRelease[] = {false,false,false}; // button is released
-boolean buttonPressed[] = {false,false,false}; // button has pressed one time 
-boolean buttonPressedCheck[] = {false,false,false};
-boolean buttonReleaseCheck[] = {false,false,false};
+boolean buttonPressing[] = {false, false, false}; // button is pressing
+boolean buttonRelease[] = {false, false, false}; // button is released
+boolean buttonPressed[] = {false, false, false}; // button has pressed one time
+boolean buttonPressedCheck[] = {false, false, false};
+boolean buttonReleaseCheck[] = {false, false, false};
 
 void inputManager() {
 
   //input manager in loop || gerenciador de inputs em loop
-  
+
   int p[3];
   p[0] = digitalRead(PIN_BUTTON_LEFT);//LÃª o pino 5
   p[1] = digitalRead(PIN_BUTTON_SELECT);//LÃª o pino 6
   p[2] = digitalRead(PIN_BUTTON_RIGHT);//LÃª o pino 7
-  
+
   for (int i = 0; i < 3; i++) {
-  
-      if (buttonPressed[i]) { // pressed ok
-        buttonPressed[i] = false;
-        buttonPressedCheck[i] = true;
-      }
-      
-      if (buttonRelease[i]) { // release ok
-        buttonRelease[i] = false;
-        buttonReleaseCheck[i] = true;
-      }
-    
+
+    if (buttonPressed[i]) { // pressed ok
+      buttonPressed[i] = false;
+      buttonPressedCheck[i] = true;
+    }
+
+    if (buttonRelease[i]) { // release ok
+      buttonRelease[i] = false;
+      buttonReleaseCheck[i] = true;
+    }
+
     if (p[i] == LOW) { // arduino check
-    
+
       buttonPressing[i] = true; // pressing button
-      
+
       buttonRelease[i] = false; //turn release off
-      buttonReleaseCheck[i] = false;     
-    
-      if (!buttonPressedCheck[i]) 
+      buttonReleaseCheck[i] = false;
+
+      if (!buttonPressedCheck[i])
         buttonPressed[i] = true;
-        
+
     } else {
       //turn off all
       buttonPressing[i] = false;
       buttonPressed[i] = false;
       buttonPressedCheck[i] = false;
-      
+
       if (!buttonReleaseCheck[i]) //released button!
         buttonRelease[i] = true;
     }
-   
+
   }
- 
+
 }
 
 
-boolean intersectionRect(float * rect1, float * rect2) {
-  
+boolean intersectionRect(int * rect1, int * rect2) {
+
   if (rect1[0] < rect2[0] + rect2[2] && rect1[0] + rect1[2] > rect2[0]) {
-     if (rect1[1] < rect2[1] + rect2[3] && rect1[3] + rect1[1] > rect2[1]) {
+    if (rect1[1] < rect2[1] + rect2[3] && rect1[3] + rect1[1] > rect2[1]) {
       return true;
     }
   }
@@ -191,298 +195,298 @@ boolean intersectionRect(float * rect1, float * rect2) {
 
 }
 
-void collisionChecker(ObjectData* obj,float hs, float vs) {
+void collisionChecker(ObjectData* obj, float hs, float vs) {
 
-  float objRect[4] = {obj->x+pboxoffsetx+hs+camera.x, obj->y+vs,10,obj->imgSz};
-  
-  for (int i = 0; i < CollisionMap0Size*4; i += 4) {
-  
-    float rectTest[] = {pgm_read_word_near(&CollisionMap0[i]), pgm_read_word_near(&CollisionMap0[i+1])+TILEMAP_YOFFSET, pgm_read_word_near(&CollisionMap0[i+2]), pgm_read_word_near(&CollisionMap0[i+3])};
-    
-        if (intersectionRect(objRect,rectTest)) {
-          if (hs != 0) {
-          
-              obj->hspd = (int)obj->hspd;
-              //player_position.x = (int)player_position.x;
-              boolean corrector = false;
-    
-              while (!corrector) {      
-                   
-                  objRect[0] = obj->x+pboxoffsetx+camera.x+sign(obj->hspd);
-                  
-                  if (!intersectionRect(objRect,rectTest))  
-                    obj->x += sign(obj->hspd);
-                  else 
-                    corrector = true;
-              }
-              
-               obj->hspd = 0;
-              
-              break;
-          }
-          
-          if (vs != 0) {
-             
-              obj->vspd = (int)obj->vspd;
-              //player_position.y = (int)player_position.y;
-              boolean correctorY = false;
-    
-              while (!correctorY) {      
-                   
-                  objRect[1] = obj->y+camera.y+sign(obj->vspd);
-                  
-                  if (!intersectionRect(objRect,rectTest))  
-                    obj->y += sign(obj->vspd);
-                  else 
-                    correctorY = true;
-              }
-              
-               obj->vspd = 0;
-               obj->check_pulo = false;
-              break;
-          }
+  int objRect[4] = {obj->x + pboxoffsetx + hs + camera.x, obj->y + vs, 10, obj->imgSz};
+
+  for (int i = 0; i < CollisionMap0Size * 4; i += 4) {
+
+    int rectTest[] = {pgm_read_word_near(&CollisionMap0[i]), pgm_read_word_near(&CollisionMap0[i + 1]) + TILEMAP_YOFFSET, pgm_read_word_near(&CollisionMap0[i + 2]), pgm_read_word_near(&CollisionMap0[i + 3])};
+
+    if (intersectionRect(objRect, rectTest)) {
+      if (hs != 0) {
+
+        obj->hspd = (int)obj->hspd;
+        //player_position.x = (int)player_position.x;
+        boolean corrector = false;
+
+        while (!corrector) {
+
+          objRect[0] = obj->x + pboxoffsetx + camera.x + sign(obj->hspd);
+
+          if (!intersectionRect(objRect, rectTest))
+            obj->x += sign(obj->hspd);
+          else
+            corrector = true;
         }
-             
-  
+
+        obj->hspd = 0;
+
+        break;
+      }
+
+      if (vs != 0) {
+
+        obj->vspd = (int)obj->vspd;
+        //player_position.y = (int)player_position.y;
+        boolean correctorY = false;
+
+        while (!correctorY) {
+
+          objRect[1] = obj->y + camera.y + sign(obj->vspd);
+
+          if (!intersectionRect(objRect, rectTest))
+            obj->y += sign(obj->vspd);
+          else
+            correctorY = true;
+        }
+
+        obj->vspd = 0;
+        obj->check_pulo = false;
+        break;
+      }
+    }
+
+
   }
 
 }
 
-boolean verifyCollision(float * rect) {
+boolean verifyCollision(int * rect) {
 
-    for (int i = 0; i < CollisionMap0Size*4; i += 4) {
-  
-      float rectTest[4] = {pgm_read_word_near(&CollisionMap0[i]), pgm_read_word_near(&CollisionMap0[i+1])+ TILEMAP_YOFFSET, pgm_read_word_near(&CollisionMap0[i+2]), pgm_read_word_near(&CollisionMap0[i+3])};
-    
-        if (intersectionRect(rect,rectTest)) {
-               return true;
-        }
-        
+  for (int i = 0; i < CollisionMap0Size * 4; i += 4) {
+
+    int rectTest[4] = {pgm_read_word_near(&CollisionMap0[i]), pgm_read_word_near(&CollisionMap0[i + 1]) + TILEMAP_YOFFSET, pgm_read_word_near(&CollisionMap0[i + 2]), pgm_read_word_near(&CollisionMap0[i + 3])};
+
+    if (intersectionRect(rect, rectTest)) {
+      return true;
     }
-    
-    return false;
+
+  }
+
+  return false;
 }
 
 void objLogic(ObjectData* obj, boolean move_esq, boolean move_dir, boolean jump) {
 
   //HORIZONTAL MOVEMENT
-//clearSection(player_position.x, player_position.y,pimagew,pimageh);
+  //clearSection(player_position.x, player_position.y,pimagew,pimageh);
   if (obj->state != P_DEAD) {
-  
-      obj->hspd = 0;
-      boolean moving = false;
-     
-      if (move_esq == true && move_dir == false) {
-          obj->curDirection = 1;
-          moving = true;
-      } else if (move_dir == true && move_esq == false) {
-          obj->curDirection = -1;
-          moving = true;
-      }
-      
-      if (moving)
-          obj->hspd = hspd_speed * (float)obj->curDirection;
 
-      /*printText((String)"SPD: " + (String)hspd + (String)"\ndir" + (String)obj->curDirection + (String)"\nhspd_speed:" + (String)hspd_speed);*/
-      collisionChecker(obj,obj->hspd,0);
-      
-      //player_position2.x += hspd;
-      
-       if (camera_player_side == -1) {
-          if (obj->x > (tft.width()/2)-10)
-            camera_player_side = 0;
-          else
-            obj->x += obj->hspd;
-    
-          // screen limit <
-          if (obj->x < 0) {
-            obj->x = 0;
-            obj->hspd = 0;
-          }  
-    
-       } else if (camera_player_side == 1) {
-          if (obj->x < (tft.width()/2)-10)
-            camera_player_side = 0;
-          else
-            obj->x += obj->hspd;
-            
-          // screen limit >
-          if (obj->x > tft.width()) {
-            gamestate = GAME_TITLE;
-            /*player_position.x = tft.width()-pimagew;
-            hspd = 0;*/
-          }
-        }
-        
-        if (camera_player_side == 0) {
-          last_camera.x = camera.x;
-          //verify for limit side >
-          if (camera.x >= 0 && camera.x <= gameTilemap.getMapWidth()*8-tft.width()) {
-            camera.x += obj->hspd;
-          } if (camera.x > gameTilemap.getMapWidth()*8-tft.width()) {
-            camera_player_side = 1;
-            camera.x = gameTilemap.getMapWidth()*8-tft.width();
-            obj->x += obj->hspd;
-          } if (camera.x < 0) {
-            camera_player_side = -1;
-            obj->x += obj->hspd; 
-            camera.x = 0;  
-          }
-        } 
-  
-      //VERTICAL MOVEMENT
-    
-      //gravidade (esta no ar)
-     float playerRect[4] = { camera.x+obj->x+pboxoffsetx,camera.y+obj->y+1, 10, obj->imgSz };
-      
-      if (!verifyCollision(playerRect)) {
-        obj->vspd += grav;
-        obj->check_pulo = true;
-        obj->onAir = true;
-      } else {
-        obj->onAir = false;
-      }
-    
-      // checa colisao com chao
-      if (obj->vspd != 0) {
-          collisionChecker(obj,0,obj->vspd);
-      }
-      
-      if (jump == true && obj->check_pulo == false) {
-        obj->vspd -= jumpspd;
-        obj->check_pulo = true;  
-        tone(PIN_SPEAKER,400,100);
-      }
-      lastPosY = obj->y;
-      obj->y += obj->vspd;
-      
-      
-      if (obj->vspd == 0 && !obj->onAir) {
-          obj->lastDirection = obj->curDirection;
-          last_camera.x = camera.x;
-          last_camera.y = obj->y;
-          last_safe_position.x = obj->x;
-          last_safe_position.y = obj->y;
-      }
-      
-      //fall
+    obj->hspd = 0;
+    boolean moving = false;
 
-      /*if (obj->y+camera.y > (gameTilemap.getMapHeight()+TILEMAP_YOFFSET)*gameTilemap.getTileHeight()) {
-          if (obj->state != P_DEAD){}
-              //obj->state = P_DEAD;
+    if (move_esq == true && move_dir == false) {
+      obj->curDirection = 1;
+      moving = true;
+    } else if (move_dir == true && move_esq == false) {
+      obj->curDirection = -1;
+      moving = true;
+    }
+
+    if (moving)
+      obj->hspd = hspd_speed * (float)obj->curDirection;
+
+    /*printText((String)"SPD: " + (String)hspd + (String)"\ndir" + (String)obj->curDirection + (String)"\nhspd_speed:" + (String)hspd_speed);*/
+    collisionChecker(obj, obj->hspd, 0);
+
+    //player_position2.x += hspd;
+
+    if (camera_player_side == -1) {
+      if (obj->x > (tft.width() / 2) - 10)
+        camera_player_side = 0;
+      else
+        obj->x += obj->hspd;
+
+      // screen limit <
+      if (obj->x < 0) {
+        obj->x = 0;
+        obj->hspd = 0;
+      }
+
+    } else if (camera_player_side == 1) {
+      if (obj->x < (tft.width() / 2) - 10)
+        camera_player_side = 0;
+      else
+        obj->x += obj->hspd;
+
+      // screen limit >
+      if (obj->x > tft.width()) {
+        gamestate = GAME_TITLE;
+        /*player_position.x = tft.width()-pimagew;
+          hspd = 0;*/
+      }
+    }
+
+    if (camera_player_side == 0) {
+      last_camera.x = camera.x;
+      //verify for limit side >
+      if (camera.x >= 0 && camera.x <= gameTilemap.getMapWidth() * 8 - tft.width()) {
+        camera.x += obj->hspd;
+      } if (camera.x > gameTilemap.getMapWidth() * 8 - tft.width()) {
+        camera_player_side = 1;
+        camera.x = gameTilemap.getMapWidth() * 8 - tft.width();
+        obj->x += obj->hspd;
+      } if (camera.x < 0) {
+        camera_player_side = -1;
+        obj->x += obj->hspd;
+        camera.x = 0;
+      }
+    }
+
+    //VERTICAL MOVEMENT
+
+    //gravidade (esta no ar)
+    int playerRect[4] = { camera.x + obj->x + pboxoffsetx, camera.y + obj->y + 1, 10, obj->imgSz };
+
+    if (!verifyCollision(playerRect)) {
+      obj->vspd += grav;
+      obj->check_pulo = true;
+      obj->onAir = true;
+    } else {
+      obj->onAir = false;
+    }
+
+    // checa colisao com chao
+    if (obj->vspd != 0) {
+      collisionChecker(obj, 0, obj->vspd);
+    }
+
+    if (jump == true && obj->check_pulo == false) {
+      obj->vspd -= jumpspd;
+      obj->check_pulo = true;
+      tone(PIN_SPEAKER, 400, 100);
+    }
+    lastPosY = obj->y;
+    obj->y += obj->vspd;
+
+
+    if (obj->vspd == 0 && !obj->onAir) {
+      obj->lastDirection = obj->curDirection;
+      last_camera.x = camera.x;
+      last_camera.y = obj->y;
+      last_safe_position.x = obj->x;
+      last_safe_position.y = obj->y;
+    }
+
+    //fall
+
+    /*if (obj->y+camera.y > (gameTilemap.getMapHeight()+TILEMAP_YOFFSET)*gameTilemap.getTileHeight()) {
+        if (obj->state != P_DEAD){}
+            //obj->state = P_DEAD;
       }*/
-    
+
     if (obj->state != P_DEAD) {
-       if (obj->hspd == 0 && obj->vspd == 0) {
+      if (obj->hspd == 0 && obj->vspd == 0) {
         if (obj->state != P_STILL) {
           obj->state = P_STILL;
           animInit = true;
         }
       } else  if (obj->hspd != 0 && obj->vspd == 0) {
-         if (obj->state != P_MOVE) {
+        if (obj->state != P_MOVE) {
           obj->state = P_MOVE;
           animInit = true;
         }
-      } 
-      
+      }
+
       if (obj->vspd != 0) {
         if (obj->state != P_JUMP) {
           obj->state = P_JUMP;
           animInit = true;
-         }   
+        }
       }
-    
-      
-     }
-  } else if(obj == &playerObj) {
-    playerDeath();   
+
+
+    }
+  } else if (obj == &playerObj) {
+    playerDeath();
   }
-  
+
 }
 
 void playerDeath()
 {
-    playertimer++; // every DELAY | 1 = 75 millis
-    
-    if (playertimer > 1000/75) { // 1 sec
-    
-          playertimer = 0;
-          life--;
-          
-          if (life > 0) {  
-            playerObj.x = (int)((last_safe_position.x/8)*8);/*+(8*-last_direction);*/
-            playerObj.y = (int)((last_safe_position.y/8)*8);
-            
-            camera.x = (int)((last_camera.x/8)*8);/*+(8*last_direction);*//*-(tft.width()/2)-8;*/
-            camera.y = 0;
-            playerObj.state = P_STILL;
-            playerObj.vspd = 0;
-            playerObj.hspd = 0;
-            playerObj.check_pulo = false;
-        } else {
-            gamestate = GAME_GAMEOVER;
-        }
-   }
+  playertimer++; // every DELAY | 1 = 75 millis
+
+  if (playertimer > 1000 / 75) { // 1 sec
+
+    playertimer = 0;
+    life--;
+
+    if (life > 0) {
+      playerObj.x = (int)((last_safe_position.x / 8) * 8); /*+(8*-last_direction);*/
+      playerObj.y = (int)((last_safe_position.y / 8) * 8);
+
+      camera.x = (int)((last_camera.x / 8) * 8);/*+(8*last_direction);*/ /*-(tft.width()/2)-8;*/
+      camera.y = 0;
+      playerObj.state = P_STILL;
+      playerObj.vspd = 0;
+      playerObj.hspd = 0;
+      playerObj.check_pulo = false;
+    } else {
+      gamestate = GAME_GAMEOVER;
+    }
+  }
 }
 
 void objDraw(ObjectData* obj) {
-  
+
   //get size of playerbox & player position, then fill that box with bg color.
   //BMP * frameAtual;
   const unsigned char * frameAtual;
   const unsigned char * idxActual;
   idxActual = obj->frames[0];
-  bool flipH = false;
+  bool flipH = true;
   //animation setup
   if (animInit) {
-  
+
     frame = 0;
-    frameCounter = 0;   
-    
+    frameCounter = 0;
+
     if (obj->state == P_STILL || obj->state == P_JUMP) {
       frameSpd = 0.;
-      frameMax = 1; 
+      frameMax = 1;
     } else if (obj->state == P_MOVE) {
       frameSpd = 0.8;
       frameMax = 4;
     }
-  
-     animInit = false;
+
+    animInit = false;
   }
-  
+
   //controlador de tempo de frames
   if (frameMax > 1) {
-    frameCounter += frameSpd*DELAY;
-    
+    frameCounter += frameSpd * DELAY;
+
     if (frameCounter > DELAY) {
       frame++;
       frameCounter = 0;
-      if (frame > frameMax-1) {
+      if (frame > frameMax - 1) {
         frame = 0;
       }
     }
   }
-  
-  if (obj->curDirection != 1) 
-    flipH = true;
-  //frames manager 
+
+  if (obj->curDirection != 1)
+    flipH = false;
+  //frames manager
   idxActual = obj->frames[0]; //idle
 
   if (obj->state == P_JUMP) {
     idxActual = obj->frames[3];
   }
   else if (obj->state == P_MOVE) {
-      switch (frame) {
-        case 0: idxActual = obj->frames[1]; break;
-        case 1: idxActual = obj->frames[0];break;
-        case 2: idxActual = obj->frames[2];break;
-        case 3: idxActual = obj->frames[0];break;
-      }
+    switch (frame) {
+      case 0: idxActual = obj->frames[1]; break;
+      case 1: idxActual = obj->frames[0]; break;
+      case 2: idxActual = obj->frames[2]; break;
+      case 3: idxActual = obj->frames[0]; break;
+    }
   }
 
   int xStart = 0;
   int yStart = 0;
-  if(lastFrameX < obj->x)
+  if (lastFrameX < obj->x)
   {
     xStart = lastFrameX;
   }
@@ -490,7 +494,7 @@ void objDraw(ObjectData* obj) {
   {
     xStart = obj->x;
   }
-  if(lastFrameY < obj->y)
+  if (lastFrameY < obj->y)
   {
     yStart = lastFrameY;
   }
@@ -499,7 +503,8 @@ void objDraw(ObjectData* obj) {
     yStart = obj->y;
   }
 
-  tft.drawFastColorBitmap(obj->x,obj->y, obj->imgSz,obj->imgSz,idxActual,obj->pal,flipH,false);
+  //tft.drawFastColorBitmap(obj->x,obj->y, obj->imgSz,obj->imgSz,idxActual,obj->pal,flipH,false);
+  tft.drawCBMPsectionRLE(obj->x, obj->y, obj->imgSz, obj->imgSz, idxActual, 103, obj->pal, obj->imgSz, obj->imgSz, 0, flipH, false);
   //tft.drawFastColorBitmap(64, 64, 16,16,mario0col,marioPal,flipH,false);
   // debug collision box
   //tft.fillRect(player_position.x+pboxoffsetx, player_position.y, 10, 16, ST7735_BLACK);
@@ -510,196 +515,185 @@ int counterGUI = 0;
 
 void drawGui() {
 
-  String stringint = String(life,DEC);
+  String stringint = String(life, DEC);
   //String stringint = String(counterGUI,DEC);
   //String string = String("time:" + stringint);
   //counterGUI++;
-  String strworld = String(world) + '-' + String(lvl);
+
   String strscore = String(score);
   String strtime = String(timeLeft);
   String strcoin = String(coins);
-  tft.setTextSize(1);
-  tft.setTextColor(ST7735_BLACK,ST7735_WHITE);
-  tft.setCursor(40,0);
-  tft.print(stringint);
-  tft.setCursor(64,8);
-  tft.print(strworld);
-  tft.setCursor(0,8);
-  tft.print(strscore);
-  tft.setCursor(108,8);
-  tft.print(strtime);
-  tft.setCursor(48,8);
-  tft.print(strcoin);
+  //tft.setTextSize(1);
+  //tft.setTextColor(ST7735_BLACK,ST7735_WHITE);
+  //tft.setCursor(40,0);
+  //tft.print(stringint);
+  tft.drawFont(48, 0, stringint);
+
+  //tft.setCursor(0,8);
+  //tft.print(strscore);
+  tft.drawFont(0, 8, strscore);
+  //tft.setCursor(108,8);
+  //tft.print(strtime);
+  tft.drawFont(108, 8, strtime);
+  //tft.setCursor(48,8);
+  //tft.print(strcoin);
+  tft.drawFont(48, 8, strcoin);
 }
 
 void sceneIntro() {
-  
-  clearScreen(); //clean screen 
-  String text = "Regi and Tobi";
-  tft.setTextSize(1);
-  tft.setTextColor(ST7735_BLACK);
-  tft.setCursor((tft.width()-getTextSize(text))/2,tft.height()/2-12);
-  tft.print(text);
-  text = "presents";
-  tft.setCursor((tft.width()-getTextSize(text))/2,tft.height()/2-4);
-  tft.print(text);
+
+  clearScreen(); //clean screen
+  String text = "REGI AND TOBI";
+  //tft.setTextSize(1);
+  //tft.setTextColor(ST7735_BLACK);
+  //tft.setCursor((tft.width()-getTextSize(text))/2,tft.height()/2-12);
+  //tft.print(text);
+  tft.drawFont((tft.width() - getTextSize(text)) / 2, tft.height() / 2 - 12, text);
+  text = "PRESENTS";
+  //tft.setCursor((tft.width()-getTextSize(text))/2,tft.height()/2-4);
+  //tft.print(text);
+  tft.drawFont((tft.width() - getTextSize(text)) / 2, tft.height() / 2 - 4, text);
   //tft.tft(); display.display()?
   inputManager();
   TIMER_CURRENT = millis();
-    
-   if (TIMER_CURRENT - TIMER_PREV > 2500) { 
-      
-        TIMER_PREV = TIMER_CURRENT;
-        clearScreen();
-        gamestate = GAME_TITLE;
-   }
+
+  if (TIMER_CURRENT - TIMER_PREV > 2500) {
+
+    TIMER_PREV = TIMER_CURRENT;
+    clearScreen();
+    gamestate = GAME_TITLE;
+  }
 }
 
 void sceneTitle() {
 
-    // loop title screen
-    float sizex = 14*6;
+  // loop title screen
+  float sizex = 14 * 6;
 
-   int select = 0; 
-   int selectMax = 3;
-   unsigned int triggerSelect = 0;
-   unsigned int counter = 0;
-   unsigned int counterMax = 0;
+  int select = 0;
+  int selectMax = 3;
+  unsigned int triggerSelect = 0;
+  unsigned int counter = 0;
+  unsigned int counterMax = 0;
 
-   
+
   while (gamestate == GAME_TITLE) {
 
-   TIMER_CURRENT = millis();
-    
-   if (TIMER_CURRENT - TIMER_PREV > DELAY) { 
-      
-        TIMER_PREV = TIMER_CURRENT;
-        
-        inputManager();
-        
-        if (triggerSelect == 0) {
-            if (buttonPressed[2]) {
-              select++;
-              clearScreen();
-              if (select >= selectMax) 
-                select = 0;
-                
-            } else if (buttonPressed[0]) {
-                  select--;
-                  clearScreen();
-              if (select < 0)
-                select = selectMax-1;    
-            }
-           
-           
-           if (buttonPressed[1]) {
-            triggerSelect = 1;
-            counterMax = 1;
-          }
-         } 
-        
-        
-       String str = "test";
-      
-        switch (select) {
-          case 0: {str = "< START GAME >"; break;};
+    TIMER_CURRENT = millis();
+
+    if (TIMER_CURRENT - TIMER_PREV > DELAY) {
+
+      TIMER_PREV = TIMER_CURRENT;
+
+      inputManager();
+
+      if (triggerSelect == 0) {
+        if (buttonPressed[2]) {
+          select++;
+          clearScreen();
+          if (select >= selectMax)
+            select = 0;
+
+        } else if (buttonPressed[0]) {
+          select--;
+          clearScreen();
+          if (select < 0)
+            select = selectMax - 1;
+        }
+
+
+        if (buttonPressed[1]) {
+          triggerSelect = 1;
+          counterMax = 1;
+        }
+      }
+
+
+      String str = "test";
+
+      switch (select) {
+        case 0: {
+            str = "@ START GAME @";
+            break;
+          };
           //case 1: {str = "< CREDITS >"; break;};
-          //case 2: {str = "< EXIT GAME >"; break;};  
-        }
-        
-        //clearScreen();
-        int gameLogoSizeX = 84;
-        int gameLogoSizeY = 24;
+          //case 2: {str = "< EXIT GAME >"; break;};
+      }
 
-        //marioLogo - Multiple monochrome layers drawn in color : 89% (25666) | 774bytes
-        //marioLogo - 256-color indexed color w/ monochrome mask: 96% (27562) | 2670bytes
-        //marioLogo - Monochrome: 88%(25300) | 408 bytes
-        //no logo - 24892(86%) 
-        
-       tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, 0, toplogo, toplogo_width, toplogo_height,ST7735_BLUE);
-       tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, botlogo, botlogo_width, botlogo_height,ST7735_RED);
+      //clearScreen();
+      int gameLogoSizeX = 84;
+      int gameLogoSizeY = 24;
+
+      //marioLogo - Multiple monochrome layers drawn in color : 89% (25666) | 774bytes
+      //marioLogo - 256-color indexed color w/ monochrome mask: 96% (27562) | 2670bytes
+      //marioLogo - Monochrome: 88%(25300) | 408 bytes
+      //no logo - 24892(86%)
+
+      tft.drawXBitmap((tft.width() - gameLogoSizeX) / 2, 0, toplogo, toplogo_width, toplogo_height, ST7735_BLUE);
+      tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, botlogo, botlogo_width, botlogo_height,ST7735_RED);
       // tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, shadow, shadow_width, shadow_height,ST7735_BLACK);
+      //tft.drawCBMPsectionRLE(8, 8, 16, 16, marioJcol, 103, marioPal, 16, 16, 0, false, false);
 
-      
-       
-       String output;
-       uint8_t test;
-       /* for(uint16_t i = 0; i< 8; i++)
-        {
-          test = pgm_read_byte(&tilePtr[i]);
-          output += test;
-        }*/
-         tft.setCursor((tft.width()-getTextSize(output))/2,tft.height()/2-12);
-        tft.println(output);
-        tft.setTextSize(1);
-        
-        if (triggerSelect == 1)
-          tft.setTextColor(ST7735_WHITE,ST7735_BLACK);
-        else
-          tft.setTextColor(ST7735_BLACK);
-        
-        tft.setCursor((tft.width()-getTextSize(str))/2,24+8);
-        tft.print(str);
-        objDraw(&playerObj);
-        //tft.tft(); display.display()?
-       
-      
-      
-       if (triggerSelect != 0) {
+      tft.drawFont((tft.width() - getTextSize(str)) / 2, 24 + 8, str);
+
+
+
+      if (triggerSelect != 0) {
         if (counter > counterMax) {
-            counter = 0;
-            triggerSelect++;
+          counter = 0;
+          triggerSelect++;
         } else {
-            counter++;
+          counter++;
         }
       }
+    }
+
+    if (triggerSelect == 3) {
+
+      if (select == 0) {
+        gamestate = GAME_LEVEL;
+      } else {
+        triggerSelect = 0;
       }
-            
-        if (triggerSelect == 3) {
-          
-          if (select == 0) {
-            gamestate = GAME_LEVEL;
-          } else {
-            triggerSelect = 0;
-          }   
-        }
-      
-       
-   }
-   
+    }
+
+
   }
+
+}
 
 
 void sceneChange(String text, unsigned int nextState)
 {
   int sizex = getTextSize(text);
-  
-  while (gamestate != nextState) {
-    
-         clearScreen();
-   
-          tft.fillRect(0, 0, tft.width(), tft.height(), ST7735_BLACK);
-          tft.setTextSize(1);
-          tft.setTextColor(ST7735_WHITE,ST7735_BLACK);
-          tft.setCursor((tft.width()-sizex)/2,(tft.height()/2)-3);
-          tft.print(text);
 
-         
+  while (gamestate != nextState) {
+
+    clearScreen();
+
+    tft.fillRect(0, 0, tft.width(), tft.height(), ST7735_BLACK);
+    //tft.setTextSize(1);
+    //tft.setTextColor(ST7735_WHITE,ST7735_BLACK);
+    //tft.setCursor((tft.width()-sizex)/2,(tft.height()/2)-3);
+    //tft.print(text);
+    tft.drawFont((tft.width() - sizex) / 2, (tft.height() / 2) - 3, text);
+
+
     TIMER_CURRENT = millis();
-    
-      if (TIMER_CURRENT - TIMER_PREV > 3000) { 
-      
-        TIMER_PREV = TIMER_CURRENT;
-        gamestate = nextState;
-        clearScreen();
-      }
-        
+
+    if (TIMER_CURRENT - TIMER_PREV > 3000) {
+
+      TIMER_PREV = TIMER_CURRENT;
+      gamestate = nextState;
+      clearScreen();
+    }
+
   }
 }
 
 void resetGame() {
 
-  playerObj.state = P_STILL; 
+  playerObj.state = P_STILL;
   life = 3;
   playerObj.curDirection = 1;
   playerObj.x = 0;
@@ -723,25 +717,28 @@ void resetGame() {
   coins = 0;
 }
 
-void initGameScreen(){
+void initGameScreen() {
   uint8_t width = tft.width();
   //first row - GUI elements
   //2nd row - GUI elements
   //3rd row - solid sky fade out
   //4th row - interlaced sky fade out
-  
+  String strworld = String(world) + '@' + String(lvl);
   //draw top sky fade
-  tft.setCursor(0, 0);
-  tft.setTextColor(ST7735_BLACK);
-  tft.println("MARIOx    WORLD  TIME");
-  tft.fillRect(0,16,width,8,0x4499);
+  //tft.setCursor(0, 0);
+  //tft.setTextColor(ST7735_BLACK);
+  //tft.println("MARIOx    WORLD  TIME");
+  tft.drawFont(0, 0, "MARIO<  LVL TIME");
+  tft.fillRect(0, 16, width, 8, 0x4499);
   //draw bot sky fade
-  for(uint8_t i = 0; i< 8; i+=2)
+  for (uint8_t i = 0; i < 8; i += 2)
   {
-    tft.fillRect(0,24+i,width,1,0x4499);
-    tft.fillRect(0,25+i,width,1,ST7735_WHITE);
+    tft.fillRect(0, 24 + i, width, 1, 0x4499);
+    tft.fillRect(0, 25 + i, width, 1, ST7735_WHITE);
   }
-  
+  //tft.setCursor(64,8);
+  //tft.print(strworld);
+  tft.drawFont(64, 8, strworld);
 }
 
 void sceneGame() {
@@ -754,67 +751,45 @@ void sceneGame() {
   //objDraw - 2ms
   //drawGui - 12ms
   //drawGUI - initial draw, then update life/score etc.
+
+  //textDraw routines + font - 2kbytes.
+
   while (gamestate == GAME_PLAY) {
-  
+
     TIMER_CURRENT = millis();
-    
-      if(TIMER_CURRENT - TIMER_PREV > DELAY) { // game loop
-      
-        TIMER_PREV = TIMER_CURRENT;
-      
-        inputManager(); // 5 = 0
-        
-        //if (buttonPressing[2] && buttonPressing[1] && buttonPressing[0]) 
-        //    gamestate = GAME_TITLE;
-        
-        #if DEBUGMODE
-        long timeChk = millis();
-        String output = "";
-        #endif
-        objLogic(&playerObj,buttonPressing[2],buttonPressing[0],buttonPressed[1]);
-        #if DEBUGMODE
-        timeChk = millis() - timeChk;
-        output += (String)"objLogic:" + (String)timeChk + (String)"\n";
-        #endif
-        
-        //objLogic(&goombaObj,false,false,false);
 
-        //long time = millis();
+    if (TIMER_CURRENT - TIMER_PREV > DELAY /3) { // game loop
 
+      TIMER_PREV = TIMER_CURRENT;
 
-        #if DEBUGMODE
-        timeChk = millis();
-        #endif
-        gameTilemap.drawMap(camera.x,camera.y);
-        #if DEBUGMODE
-        timeChk = millis() - timeChk;
-        output +=(String)"drawMap:" + (String)timeChk + (String)"\n";
-        #endif
+      inputManager(); // 5 = 0
 
-        #if DEBUGMODE
-        timeChk = millis();
-        #endif
-        objDraw(&playerObj);
-        #if DEBUGMODE
-        timeChk = millis() - timeChk;
-        output +=(String)"objDraw:" + (String)timeChk + (String)"\n";
-        #endif
-        //objDraw(&goombaObj);
-        #if DEBUGMODE
-        timeChk = millis();
-        #endif
-        drawGui();
-        #if DEBUGMODE
-        timeChk = millis() - timeChk;
-        output +=(String)"drawGUI:" + (String)timeChk + (String)"\n";
-        printText(output);
-        #endif
-        
-        //tft.tft(); display.display
+      //if (buttonPressing[2] && buttonPressing[1] && buttonPressing[0])
+      //    gamestate = GAME_TITLE;
+
+#if DEBUGMODE
+      long timeChk = millis();
+#endif
+      objLogic(&playerObj, buttonPressing[2], buttonPressing[0], buttonPressed[1]);
+
+      //objLogic(&goombaObj,false,false,false);
+
+      //long time = millis();
+      gameTilemap.drawMap(camera.x, camera.y);
+
+      objDraw(&playerObj);
+      //objDraw(&goombaObj);
+      drawGui();
+#if DEBUGMODE
+      timeChk = millis() - timeChk;
+      timeLeft = timeChk;
+#endif
+
+      //tft.tft(); display.display
     }
 
   }
-  
+
 }
 
 void setup()   {
@@ -827,12 +802,12 @@ void setup()   {
   //tft.begin();
 
   tft.fillScreen(ST7735_BLACK);
-  
+
   //song - DOSENT WORK - DO NOT USE
   pinMode(PIN_SPEAKER, OUTPUT);//buzzer
-  tone(PIN_SPEAKER,400,100);
+  tone(PIN_SPEAKER, 400, 100);
   //pinMode(13, OUTPUT);//led indicator when singing a note
-  
+
   // inputs
   //pinMode(PIN_BUTTON_LEFT, INPUT);//Define o pino 7 como entrada
   //digitalWrite(PIN_BUTTON_LEFT, HIGH);//Ativa o resistor de pull-up da porta 7
@@ -841,7 +816,7 @@ void setup()   {
   //pinMode(PIN_BUTTON_RIGHT, INPUT);//Define o pino 7 como entrada
   digitalWrite(PIN_BUTTON_RIGHT, HIGH);//Ativa o resistor de pull-up da porta 7
 
-  gameTilemap.setMapSize(100,6);
+  gameTilemap.setMapSize(100, 6);
   gameTilemap.settftPointer(&tft);
   gameTilemap.setTileMap(TileMap0);
 
@@ -859,55 +834,71 @@ void setup()   {
   goombaObj.frames[3] = goomba0;
   goombaObj.frames[4] = goomba2;
   //ObjectData test(0,0,goomba0,goomba0,goomba0,goomba0,goomba0);
+
 };
 
-void printText(String text){
-  tft.setCursor(DEBUGX, DEBUGY);
-  tft.fillRect(DEBUGX,DEBUGY,getTextSize(text),8,ST7735_WHITE);
-  tft.setTextColor(ST7735_BLACK);  tft.setTextSize(1);
-  tft.println(text);
+void printText(String text) {
+  //tft.setCursor(DEBUGX, DEBUGY);
+  tft.fillRect(DEBUGX, DEBUGY, getTextSize(text), 8, ST7735_WHITE);
+  //tft.setTextColor(ST7735_BLACK);  tft.setTextSize(1);
+  //tft.println(text);
 }
 
 //get text size(pixel size for setting cursor pos)
-int getTextSize(String str){
-    return getTextSize(str,-1);
+int getTextSize(String str) {
+  return getTextSize(str, -1);
 }
 
 int getTextSize(String str, int fontSize)
 {
-    if(fontSize == -1)
-    {
-      fontSize = 6;
-    }
-    return (str.length() * fontSize);
+  if (fontSize == -1)
+  {
+    fontSize = 8;
+  }
+  return (str.length() * fontSize);
 }
 
-void clearScreen(){
+void clearScreen() {
   tft.fillScreen(ST7735_WHITE);
 }
 
 void clearSection(int16_t x, int16_t y, int16_t w, int16_t h)
 {
-  tft.fillRect(x,y,w,h,ST7735_WHITE);
+  tft.fillRect(x, y, w, h, ST7735_WHITE);
 }
 
 void clearTileMap()
 {
-  tft.fillRect(0,0,tft.width(),40,ST7735_WHITE);
+  tft.fillRect(0, 0, tft.width(), 40, ST7735_WHITE);
 }
 
 void loop() {
-  
-   switch (gamestate) { // "STATE MACHINE MANAGER"
-  
-    case GAME_INTRO: {sceneIntro(); break;}
-    case GAME_TITLE: {sceneTitle(); break;}
-    case GAME_LEVEL: {sceneChange("Level 1",GAME_PLAY); break;}
-    case GAME_PLAY: {sceneGame(); break;}
-    case GAME_GAMEOVER: {sceneChange("Game Over", GAME_TITLE); break;}
-  } 
 
-  
-  
+  switch (gamestate) { // "STATE MACHINE MANAGER"
+
+    case GAME_INTRO: {
+        sceneIntro();
+        break;
+      }
+    case GAME_TITLE: {
+        sceneTitle();
+        break;
+      }
+    case GAME_LEVEL: {
+        sceneChange("LEVEL 1", GAME_PLAY);
+        break;
+      }
+    case GAME_PLAY: {
+        sceneGame();
+        break;
+      }
+    case GAME_GAMEOVER: {
+        sceneChange("GAME OVER", GAME_TITLE);
+        break;
+      }
+  }
+
+
+
 }
 
