@@ -12,6 +12,7 @@ typedef const uint16_t PROGMEM COLMAP;
 typedef const uint8_t PROGMEM TILEMAPSET;
 typedef const uint8_t PROGMEM COLORIDX;
 typedef const uint16_t PROGMEM PAL;
+typedef const uint16_t PROGMEM TILEADDR;
 typedef const uint16_t PROGMEM ENEMY;
 
 struct Vector2f {

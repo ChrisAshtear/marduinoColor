@@ -117,6 +117,7 @@ ObjectData playerObj(0, 24, 16, 103, marioPal, mario0col, mario1col, mario2col, 
 //int rleSizes2[5] = {25,25,25,25,16};
 ObjectData goombaObj(24, 0, 8, 25, tilePal, goomba0, goomba0, goomba0, goomba0, goomba2);
 
+uint8_t pins[3];
 
 
 float sign(float x) {
@@ -143,9 +144,9 @@ void inputManager() {
   //input manager in loop || gerenciador de inputs em loop
 
   int p[3];
-  p[0] = digitalRead(PIN_BUTTON_LEFT);//LÃª o pino 5
-  p[1] = digitalRead(PIN_BUTTON_SELECT);//LÃª o pino 6
-  p[2] = digitalRead(PIN_BUTTON_RIGHT);//LÃª o pino 7
+  /*pins[0] = */p[0] = digitalRead(PIN_BUTTON_LEFT);//LÃª o pino 5
+  /*pins[1] = */p[1] = digitalRead(PIN_BUTTON_SELECT);//LÃª o pino 6
+  /*pins[2] = */p[2] = digitalRead(PIN_BUTTON_RIGHT);//LÃª o pino 7
 
   for (int i = 0; i < 3; i++) {
 
@@ -503,8 +504,8 @@ void objDraw(ObjectData* obj) {
     yStart = obj->y;
   }
 
-  //tft.drawFastColorBitmap(obj->x,obj->y, obj->imgSz,obj->imgSz,idxActual,obj->pal,flipH,false);
-  tft.drawCBMPsectionRLE(obj->x, obj->y, obj->imgSz, obj->imgSz, idxActual, 103, obj->pal, obj->imgSz, obj->imgSz, 0, flipH, false);
+  tft.drawFastColorBitmap(obj->x,obj->y, obj->imgSz,obj->imgSz,idxActual,obj->pal,flipH,false);
+  //tft.drawCBMPsectionRLE(obj->x, obj->y, obj->imgSz, obj->imgSz, idxActual, 103, obj->pal, obj->imgSz, obj->imgSz, 0, flipH, false);
   //tft.drawFastColorBitmap(64, 64, 16,16,mario0col,marioPal,flipH,false);
   // debug collision box
   //tft.fillRect(player_position.x+pboxoffsetx, player_position.y, 10, 16, ST7735_BLACK);
@@ -632,10 +633,18 @@ void sceneTitle() {
       tft.drawXBitmap((tft.width() - gameLogoSizeX) / 2, 0, toplogo, toplogo_width, toplogo_height, ST7735_BLUE);
       tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, botlogo, botlogo_width, botlogo_height,ST7735_RED);
       // tft.drawXBitmap((tft.width()-gameLogoSizeX)/2, toplogo_height, shadow, shadow_width, shadow_height,ST7735_BLACK);
-      //tft.drawCBMPsectionRLE(8, 8, 16, 16, marioJcol, 103, marioPal, 16, 16, 0, false, false);
-
+      //tft.drawFastColorBitmap(8, 8, 16, 16, mario0col,marioPal, false, false);
+      
       tft.drawFont((tft.width() - getTextSize(str)) / 2, 24 + 8, str);
 
+      /*for(uint8_t i=0;i<10;i++)
+      {
+        tft.drawCBMPsectionRLE((8*i)+8,64,8,8,tileSet,tsLoc,tilePal,8,216,i,false,false);
+      }*/
+      /*String pinText = "L:" + (String)pins[0];
+      pinText += " J:" + (String)pins[1];
+      pinText += " R:" + (String)pins[2];
+      tft.drawFont(16,64,pinText);*/
 
 
       if (triggerSelect != 0) {
@@ -809,11 +818,11 @@ void setup()   {
   //pinMode(13, OUTPUT);//led indicator when singing a note
 
   // inputs
-  //pinMode(PIN_BUTTON_LEFT, INPUT);//Define o pino 7 como entrada
-  //digitalWrite(PIN_BUTTON_LEFT, HIGH);//Ativa o resistor de pull-up da porta 7
-  //pinMode(PIN_BUTTON_SELECT, INPUT);//Define o pino 7 como entrada
-  //digitalWrite(PIN_BUTTON_SELECT, HIGH);//Ativa o resistor de pull-up da porta 7
-  //pinMode(PIN_BUTTON_RIGHT, INPUT);//Define o pino 7 como entrada
+  pinMode(PIN_BUTTON_LEFT, INPUT);//Define o pino 7 como entrada
+  digitalWrite(PIN_BUTTON_LEFT, HIGH);//Ativa o resistor de pull-up da porta 7
+  pinMode(PIN_BUTTON_SELECT, INPUT);//Define o pino 7 como entrada
+  digitalWrite(PIN_BUTTON_SELECT, HIGH);//Ativa o resistor de pull-up da porta 7
+  pinMode(PIN_BUTTON_RIGHT, INPUT);//Define o pino 7 como entrada
   digitalWrite(PIN_BUTTON_RIGHT, HIGH);//Ativa o resistor de pull-up da porta 7
 
   gameTilemap.setMapSize(100, 6);
